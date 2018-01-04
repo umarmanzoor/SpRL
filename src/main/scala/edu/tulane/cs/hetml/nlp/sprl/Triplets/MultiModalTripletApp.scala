@@ -247,9 +247,25 @@ object MultiModalTripletApp extends App with Logging {
           ReportHelper.saveEvalResults(outStream, s"${x.getClassSimpleNameForClassifier}(within data model)", res)
       }
 
-      if (usePrepositions && visualTripletsFiltered.nonEmpty) {
-        val prepResult = PrepositionClassifier.test(visualTripletsFiltered)
-        ReportHelper.saveEvalResults(outStream, s"Preposition(within data model)", prepResult)
+      if (usePrepositions) {
+        if (visualTripletsFiltered.nonEmpty) {
+          val prepResult = PrepositionClassifier.test(visualTripletsFiltered)
+          ReportHelper.saveEvalResults(outStream, s"Preposition(within data model)", prepResult)
+        }
+        if(alignmentMethod == "topN") {
+          TripletSensors.alignmentHelper.trainedWordClassifier.keys.foreach {
+            w =>
+              val wClassifier = TripletSensors.alignmentHelper.trainedWordClassifier(w)
+              val constrainedWClassifier = new ConstrainedSingleWordAsClassifier(w)
+              val filtered = wordSegments().filter(_.getWord.equalsIgnoreCase(w))
+              if (filtered.nonEmpty) {
+                val res = wClassifier.test(filtered)
+                ReportHelper.saveEvalResults(outStream, s"Word as classifier '$w'", res)
+                val constrainedRes = constrainedWClassifier.test(filtered)
+                ReportHelper.saveEvalResults(outStream, s"Constrained Word as classifier '$w'", constrainedRes)
+              }
+          }
+        }
       }
 
       reportForErrorAnalysis(x => TripletRelationConstraintClassifier(x),

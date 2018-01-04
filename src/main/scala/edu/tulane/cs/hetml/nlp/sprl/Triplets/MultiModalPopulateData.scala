@@ -82,7 +82,7 @@ object MultiModalPopulateData extends Logging {
             val wordSegs = segs.map(x => new WordSegment(lemma, x, false))
             val topIds = alignmentHelper.predictTopSegmentIds(wordSegs, tripletConfigurator.topAlignmentCount)
             if (topIds.contains(s.getSegmentId)) {
-              val wordSegment = new WordSegment(lemma, s, false)
+              val wordSegment = new WordSegment(lemma, s, p.getPropertyValues("goldAlignment").exists(_.toInt == s.getSegmentId))
               wordSegment.setPhrase(p)
               wordSegment
             }
