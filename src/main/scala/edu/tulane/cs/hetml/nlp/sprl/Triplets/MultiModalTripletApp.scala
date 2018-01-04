@@ -34,9 +34,9 @@ object MultiModalTripletApp extends App with Logging {
   MultiModalSpRLTripletClassifiers.featureSet = model
 
   val constraintRoleClassifiers = List[ConstrainedClassifier[Phrase, Sentence]](
-    TRConstraintClassifier,
-    LMConstraintClassifier,
-    IndicatorConstraintClassifier
+    //TRConstraintClassifier,
+    //LMConstraintClassifier,
+    //IndicatorConstraintClassifier
   )
 
   val roleClassifiers = List[Learnable[Phrase]](
@@ -46,10 +46,10 @@ object MultiModalTripletApp extends App with Logging {
   )
 
   val constraintTripletClassifiers = List[ConstrainedClassifier[Relation, Sentence]](
-    TripletRelationConstraintClassifier,
-    TripletGeneralTypeConstraintClassifier,
-    TripletRegionConstraintClassifier,
-    TripletDirectionConstraintClassifier
+    TripletRelationConstraintClassifier//,
+    //TripletGeneralTypeConstraintClassifier,
+    //TripletRegionConstraintClassifier,
+    //TripletDirectionConstraintClassifier
   )
 
   val tripletClassifiers = List[Learnable[Relation]](
@@ -112,22 +112,22 @@ object MultiModalTripletApp extends App with Logging {
         x.save()
     }
 
-    if (populateImages) {
-      val gtRels = triplets().filter(x => tripletIsRelation(x) == "Relation"
-        && x.getArgument(0).containsProperty("goldAlignment") && x.getArgument(2).containsProperty("goldAlignment"))
-        .toList
-      ImageTripletTypeClassifier.learn(iterations, gtRels)
-      ImageTripletTypeClassifier.modelDir = s"models/mSpRL/triplet/$featureSet/"
-      ImageTripletTypeClassifier.save()
-
-      ReportHelper.saveImageTripletErrorTypes(gtRels,
-        r => triplets(r) ~> tripletToVisualTriplet,
-        resultsDir,
-        isTrain,
-        r => tripletSpecificType(r),
-        r => ImageTripletTypeClassifier(r)
-      )
-    }
+//    if (populateImages) {
+//      val gtRels = triplets().filter(x => tripletIsRelation(x) == "Relation"
+//        && x.getArgument(0).containsProperty("goldAlignment") && x.getArgument(2).containsProperty("goldAlignment"))
+//        .toList
+//      ImageTripletTypeClassifier.learn(iterations, gtRels)
+//      ImageTripletTypeClassifier.modelDir = s"models/mSpRL/triplet/$featureSet/"
+//      ImageTripletTypeClassifier.save()
+//
+//      ReportHelper.saveImageTripletErrorTypes(gtRels,
+//        r => triplets(r) ~> tripletToVisualTriplet,
+//        resultsDir,
+//        isTrain,
+//        r => tripletSpecificType(r),
+//        r => ImageTripletTypeClassifier(r)
+//      )
+//    }
 
     if (usePrepositions && trainPrepositionClassifier) {
 
@@ -183,23 +183,23 @@ object MultiModalTripletApp extends App with Logging {
       x => IndicatorRoleClassifier(x) == "true",
       x => lmCandidatesTest.exists(_.getId == x.getId))
 
-    if (populateImages) {
-      val gtRels = triplets().filter(x => tripletIsRelation(x) == "Relation"
-        && x.getArgument(0).containsProperty("goldAlignment") && x.getArgument(2).containsProperty("goldAlignment"))
-        .toList
-
-      ImageTripletTypeClassifier.modelDir = s"models/mSpRL/triplet/$featureSet/"
-      ImageTripletTypeClassifier.load()
-      ImageTripletTypeClassifier.test(gtRels)
-
-      ReportHelper.saveImageTripletErrorTypes(gtRels,
-        r => triplets(r) ~> tripletToVisualTriplet,
-        resultsDir,
-        isTrain,
-        r => tripletSpecificType(r),
-        r => ImageTripletTypeClassifier(r)
-      )
-    }
+//    if (populateImages) {
+//      val gtRels = triplets().filter(x => tripletIsRelation(x) == "Relation"
+//        && x.getArgument(0).containsProperty("goldAlignment") && x.getArgument(2).containsProperty("goldAlignment"))
+//        .toList
+//
+//      ImageTripletTypeClassifier.modelDir = s"models/mSpRL/triplet/$featureSet/"
+//      ImageTripletTypeClassifier.load()
+//      ImageTripletTypeClassifier.test(gtRels)
+//
+//      ReportHelper.saveImageTripletErrorTypes(gtRels,
+//        r => triplets(r) ~> tripletToVisualTriplet,
+//        resultsDir,
+//        isTrain,
+//        r => tripletSpecificType(r),
+//        r => ImageTripletTypeClassifier(r)
+//      )
+//    }
 
     if (!useConstraints) {
       val visualTripletsFiltered = visualTriplets.getTestingInstances.toList.filter(x => x.getSp != null)
