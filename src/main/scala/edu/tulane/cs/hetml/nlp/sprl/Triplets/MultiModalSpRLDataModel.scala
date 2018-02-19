@@ -8,6 +8,7 @@ import edu.tulane.cs.hetml.nlp.sprl.MultiModalSpRLSensors._
 import edu.tulane.cs.hetml.nlp.sprl.Triplets.TripletSensors._
 import edu.tulane.cs.hetml.nlp.sprl.VisualTriplets.VisualTripletClassifiers.VisualTripletClassifier
 import edu.tulane.cs.hetml.vision._
+import edu.tulane.cs.hetml.visualgenome.VisualGenomeStats
 
 /** Created by Taher on 2017-01-11.
   */
@@ -38,6 +39,7 @@ object MultiModalSpRLDataModel extends DataModel {
   val segmentPhrasePairs = node[Relation]((r: Relation) => r.getId)
   val wordSegments = node[WordSegment]
   val visualTriplets = node[ImageTriplet]
+  val visualGenomeStats = node[VisualGenomeStats]
 
   /*
   Edges

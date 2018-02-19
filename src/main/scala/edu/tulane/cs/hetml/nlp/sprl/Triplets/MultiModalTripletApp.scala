@@ -1,7 +1,7 @@
 package edu.tulane.cs.hetml.nlp.sprl.Triplets
 
 import java.io.{File, FileOutputStream, PrintStream}
-
+import java.io._
 import edu.illinois.cs.cogcomp.saul.classifier.{ConstrainedClassifier, JointTrainSparsePerceptron, Learnable, Results}
 import edu.illinois.cs.cogcomp.saul.util.Logging
 import edu.tulane.cs.hetml.nlp.BaseTypes.{Phrase, Relation, Sentence}
@@ -12,10 +12,13 @@ import edu.tulane.cs.hetml.nlp.sprl.Eval.SpRLEvaluation
 import edu.tulane.cs.hetml.nlp.sprl.Triplets.MultiModalSpRLTripletClassifiers._
 import edu.tulane.cs.hetml.nlp.sprl.Triplets.TripletSentenceLevelConstraintClassifiers._
 import edu.tulane.cs.hetml.nlp.sprl.VisualTriplets.VisualTripletClassifiers.VisualTripletClassifier
+import edu.tulane.cs.hetml.visualgenome.{VisualGenomeReader, VisualGenomeRelations}
 import tripletConfigurator._
 import org.apache.commons.io.FileUtils
 
+import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
+import edu.tulane.cs.hetml.nlp.sprl.MultiModalSpRLSensors._
 
 object MultiModalTripletApp extends App with Logging {
 
@@ -63,6 +66,8 @@ object MultiModalTripletApp extends App with Logging {
     TripletDirectionClassifier
   )
 
+  var distinctRels = scala.collection.mutable.Map[String, String]()
+
   // load all classifiers form all lists
   val classifiersModel = if(featureSet == FeatureSets.BaseLine) featureSet.toString else featureSet + "_" + alignmentMethod
   val classifiers = roleClassifiers ++ tripletClassifiers
@@ -76,6 +81,11 @@ object MultiModalTripletApp extends App with Logging {
   }
 
   FileUtils.forceMkdir(new File(resultsDir))
+
+  // load visualgenome relations
+  val vgReader = new VisualGenomeReader();
+  vgReader.loadRelations(imageDataPath);
+  val visualgenomeRelationsList = vgReader.visualgenomeRelations.toList
 
   // train prepositions from external data
   if (isTrain && trainPrepositionClassifier && usePrepositions) {
@@ -109,7 +119,7 @@ object MultiModalTripletApp extends App with Logging {
       x => lmCandidatesTrain.exists(_.getId == x.getId)
     )
 
-
+    saveRelationsScores()
     tripletClassifiers.foreach {
       x =>
         x.learn(iterations)
@@ -188,6 +198,14 @@ object MultiModalTripletApp extends App with Logging {
       x => trCandidatesTest.exists(_.getId == x.getId),
       x => IndicatorRoleClassifier(x) == "true",
       x => lmCandidatesTest.exists(_.getId == x.getId))
+
+    if(!usePreprocessedVisualGenome)
+      saveRelationsScores()
+
+    vgReader.loadStats(resultsDir)
+    val vgStats = vgReader.visualGenomeStats.toList
+
+    visualGenomeStats.populate(vgStats)
 
     if (populateImages) {
       val gtRels = triplets().filter(x => tripletIsRelation(x) == "Relation"
@@ -296,6 +314,102 @@ object MultiModalTripletApp extends App with Logging {
         x => TripletRegionConstraintClassifier(x)
       )
     }
+
+  }
+
+  def saveRelationsScores() = {
+
+    val gtRel = triplets().filter(t=> t.getProperty("Relation")=="true")
+    print(gtRel.size)
+    val visualRelFilename =
+      if(!useW2VViusalGenome)
+        if(isTrain)
+          resultsDir + "extactMatchRelsTrain.txt"
+        else
+          resultsDir + "extactMatchRelsTest.txt"
+      else
+      if(isTrain)
+        resultsDir + "W2VMatchRelsTrain.txt"
+      else
+        resultsDir + "W2VMatchRelsTest.txt"
+
+    val pw = new PrintWriter(new File(visualRelFilename))
+    var count = 0
+    gtRel.foreach(t => {
+      val r = tripletHeadWordForm(t).split("::")
+      val tr = r(0)
+      val lm = r(2)
+      val sp = r(1)
+      val vgRels = visualgenomeRelationsList.filter(r => {
+        if(useW2VViusalGenome)
+          r.getPredicate==sp && (getGoogleSimilarity(r.getSubject,tr) >= 0.50) && (getGoogleSimilarity(r.getObject,lm)>=0.50)
+        else
+          r.getPredicate==sp && r.getSubject==tr && r.getObject==lm
+      })
+
+      if(vgRels.size>0) {
+        // EC
+        val ecRels = vgRels.filter(r => r.getRcc8Label=="EC")
+        val ecScore = "%1.2f".format(ecRels.size.toDouble / vgRels.size * 100.00)
+        // DC
+        val dcRels = vgRels.filter(r => r.getRcc8Label=="DC")
+        val dcScore = "%1.2f".format(dcRels.size.toDouble / vgRels.size * 100.00)
+        // TPP
+        val tppRels = vgRels.filter(r => r.getRcc8Label=="TPP")
+        val tppScore = "%1.2f".format(tppRels.size.toDouble / vgRels.size * 100.00)
+        // TPPi
+        val tppiRels = vgRels.filter(r => r.getRcc8Label=="TPPi")
+        val tppiScore = "%1.2f".format(tppiRels.size.toDouble / vgRels.size * 100.00)
+        // NTTP
+        val nttpRels = vgRels.filter(r => r.getRcc8Label=="NTPP")
+        val nttpScore = "%1.2f".format(nttpRels.size.toDouble / vgRels.size * 100.00)
+        // NTPPi
+        val nttpiRels = vgRels.filter(r => r.getRcc8Label=="NTPPi")
+        val nttpiScore = "%1.2f".format(nttpiRels.size.toDouble / vgRels.size * 100.00)
+        // EQ
+        val eqRels = vgRels.filter(r => r.getRcc8Label=="EQ")
+        val eqScore = "%1.2f".format(eqRels.size.toDouble / vgRels.size * 100.00)
+        // PO
+        val poRels = vgRels.filter(r => r.getRcc8Label=="PO")
+        val poScore = "%1.2f".format(poRels.size.toDouble / vgRels.size * 100.00)
+
+        // Above
+        val aboveRels = vgRels.filter(r => r.getRcc8Label=="ABOVE")
+        val aboveScore = "%1.2f".format(aboveRels.size.toDouble / vgRels.size * 100.00)
+        // Below
+        val belowRels = vgRels.filter(r => r.getRcc8Label=="BELOW")
+        val belowScore = "%1.2f".format(belowRels.size.toDouble / vgRels.size * 100.00)
+        // Left
+        val leftRels = vgRels.filter(r => r.getRcc8Label=="LEFT")
+        val leftScore = "%1.2f".format(leftRels.size.toDouble / vgRels.size * 100.00)
+        // Right
+        val rightRels = vgRels.filter(r => r.getRcc8Label=="RIGHT")
+        val rightScore = "%1.2f".format(rightRels.size.toDouble / vgRels.size * 100.00)
+
+        val relKey =  sp + "," + tr + "," + lm
+        val relStats = vgRels.size + "," + ecScore + "," + dcScore + "," + tppScore + "," + tppiScore + "," + nttpScore + "," + nttpiScore + "," + eqScore + "," + poScore + "," + aboveScore + "," + belowScore + "," + leftScore + "," + rightScore
+        if(!(distinctRels.keySet.exists(_ == relKey)))
+          distinctRels += (relKey -> relStats)
+
+        count = count + 1
+      }
+      else {
+        val relKey =  sp + "," + tr + "," + lm
+        val relStats = "0,0,0,0,0,0,0,0,0,0,0,0,0"
+        if(!(distinctRels.keySet.exists(_ == relKey)))
+          distinctRels += (relKey -> relStats)
+
+      }
+
+      println(tr + "-" + lm + "-" + sp + "-> " + vgRels.size)
+    })
+    pw.write("Total Matched ->" + count + "\n")
+    for ((k,v) <- distinctRels)
+      pw.write(k + "," + v + "\n")
+
+    pw.close
+
+    println(count)
 
   }
 
