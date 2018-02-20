@@ -125,6 +125,8 @@ object MultiModalPopulateData extends Logging {
     vgReader.loadStats(resultsDir)
     val vgStats = vgReader.visualGenomeStats.toList
 
+    val f = vgStats.filter(r => r.getAboveScore > 0 || r.getBelowScore > 0 || r.getLeftScore > 0 || r.getRightScore > 0)
+
     visualGenomeStats.populate(vgStats)
 
     logger.info("Triplet population finished.")
@@ -229,7 +231,7 @@ object MultiModalPopulateData extends Logging {
 
   def saveRelationsScores() = {
 
-    val gtRel = triplets() .toList //filter(t=> t.getProperty("Relation")=="true")
+    val gtRel = triplets().toList //filter(t=> t.getProperty("Relation")=="true")
     print(gtRel.size)
     val visualRelFilename =
       if(!useW2VViusalGenome)
@@ -284,16 +286,16 @@ object MultiModalPopulateData extends Logging {
         val poScore = "%1.2f".format(poRels.size.toDouble / vgRels.size * 100.00)
 
         // Above
-        val aboveRels = vgRels.filter(r => r.getRcc8Label=="ABOVE")
+        val aboveRels = vgRels.filter(r => r.getDirectionLabel=="ABOVE")
         val aboveScore = "%1.2f".format(aboveRels.size.toDouble / vgRels.size * 100.00)
         // Below
-        val belowRels = vgRels.filter(r => r.getRcc8Label=="BELOW")
+        val belowRels = vgRels.filter(r => r.getDirectionLabel=="BELOW")
         val belowScore = "%1.2f".format(belowRels.size.toDouble / vgRels.size * 100.00)
         // Left
-        val leftRels = vgRels.filter(r => r.getRcc8Label=="LEFT")
+        val leftRels = vgRels.filter(r => r.getDirectionLabel=="LEFT")
         val leftScore = "%1.2f".format(leftRels.size.toDouble / vgRels.size * 100.00)
         // Right
-        val rightRels = vgRels.filter(r => r.getRcc8Label=="RIGHT")
+        val rightRels = vgRels.filter(r => r.getDirectionLabel=="RIGHT")
         val rightScore = "%1.2f".format(rightRels.size.toDouble / vgRels.size * 100.00)
 
         val relKey =  sp + "," + tr + "," + lm

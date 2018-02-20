@@ -275,7 +275,7 @@ object TripletSentenceLevelConstraints {
       a
   }
 
-  val diectionSupportByVisualGenome  = ConstrainedClassifier.constraint[Sentence] {
+  val directionSupportByVisualGenome  = ConstrainedClassifier.constraint[Sentence] {
     var a: FirstOrderConstraint = null
     s: Sentence =>
       a = new FirstOrderConstant(true)
@@ -287,7 +287,7 @@ object TripletSentenceLevelConstraints {
       a
   }
 
-  val diectionDiscardByVisualGenome  = ConstrainedClassifier.constraint[Sentence] {
+  val directionDiscardByVisualGenome  = ConstrainedClassifier.constraint[Sentence] {
     var a: FirstOrderConstraint = null
     s: Sentence =>
       a = new FirstOrderConstant(true)
@@ -345,7 +345,7 @@ object TripletSentenceLevelConstraints {
           boostTrajector(x) and
           boostLandmark(x) and
           boostTripletByGeneralType(x) and
-          diectionSupportByVisualGenome(x)
+          directionDiscardByVisualGenome(x)
           //rCC8DiscardByVisualGenome(x)
       //rCC8SupportByVisualGenome(x) //and
           //diectionByVisualGenome(x)
