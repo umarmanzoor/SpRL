@@ -19,6 +19,7 @@ object TripletSentenceLevelConstraints {
 
   val visualGenomePO = new BinaryRCC8Support("PO")
   val visualGenomeEC = new BinaryRCC8Support("EC")
+  val visualGenomeTPP = new BinaryRCC8Support("NTTPi")
 
   val wordAsClassifierHelper = TripletSensors.alignmentHelper
 
@@ -278,6 +279,18 @@ object TripletSentenceLevelConstraints {
       a
   }
 
+  val rCC8SupportByTPP  = ConstrainedClassifier.constraint[Sentence] {
+    var a: FirstOrderConstraint = null
+    s: Sentence =>
+      a = new FirstOrderConstant(true)
+      (sentences(s) ~> sentenceToTriplets).foreach {
+        x =>
+          a = a and ((visualGenomeTPP on x is "true") ==>
+            (TripletRelationClassifier on x is "true"))
+      }
+      a
+  }
+
   val rCC8SupportByVisualGenome  = ConstrainedClassifier.constraint[Sentence] {
     var a: FirstOrderConstraint = null
     s: Sentence =>
@@ -348,8 +361,8 @@ object TripletSentenceLevelConstraints {
           boostLandmark(x) and
           boostTripletByGeneralType(x) and
           boostGeneralByDirectionMulti(x) and
-          boostGeneralByRegionMulti(x) and
-          rCC8SupportByEC(x)
+          boostGeneralByRegionMulti(x) //and
+          //rCC8SupportByTPP(x)
           //rCC8SupportByVisualGenome(x)
           //directionDiscardByVisualGenome(x)
           //rCC8DiscardByVisualGenome(x)

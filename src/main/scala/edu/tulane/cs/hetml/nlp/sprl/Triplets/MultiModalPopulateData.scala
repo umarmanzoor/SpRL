@@ -117,17 +117,16 @@ object MultiModalPopulateData extends Logging {
     )
     xmlReader.setTripletRelationTypes(candidateRelations)
 
+    vgReader.loadStats(resultsDir)
+    val vgStats = vgReader.visualGenomeStats.toList
+
+    visualGenomeStats.populate(vgStats)
+
     triplets.populate(candidateRelations, isTrain)
 
     if(!usePreprocessedVisualGenome)
       saveRelationsScores()
 
-    vgReader.loadStats(resultsDir)
-    val vgStats = vgReader.visualGenomeStats.toList
-
-    val f = vgStats.filter(r => r.getAboveScore > 0 || r.getBelowScore > 0 || r.getLeftScore > 0 || r.getRightScore > 0)
-
-    visualGenomeStats.populate(vgStats)
 
     logger.info("Triplet population finished.")
   }

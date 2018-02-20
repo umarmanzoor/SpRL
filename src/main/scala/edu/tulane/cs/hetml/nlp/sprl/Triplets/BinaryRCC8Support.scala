@@ -58,7 +58,7 @@ class BinaryRCC8Support(rcc8: String) extends Learner("sprl.VisualGenomeRcc8") {
       if(score == -1.0)
         println("Warning: Score not found...")
 
-      if (score <= 99) {
+      if (score <= 50) {
         result.put("none", 0.0)
         result.put("true", 0.0)
         result.put("false", 1.0)

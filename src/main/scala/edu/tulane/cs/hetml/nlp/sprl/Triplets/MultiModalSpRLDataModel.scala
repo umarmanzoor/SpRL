@@ -844,6 +844,25 @@ object MultiModalSpRLDataModel extends DataModel {
       headWordLemma(first) + "::" + headWordLemma(second) + "::" + headWordLemma(third)
   }
 
+  val tripletScoreStats = property(triplets, cache = true) {
+    r: Relation =>
+      //val (first, second, third) = getTripletArguments(r)
+      val args = tripletHeadWordForm(r).split("::")
+      val tr = args(0)
+      val lm = args(2)
+      val sp = args(1)
+
+//      val tr = headWordLemma(first)
+//      val sp = headWordLemma(second)
+//      val lm = headWordLemma(third)
+      val vgStat = visualGenomeStats().filter(v => {
+        v.getPredicate==sp && v.getSubject==tr && v.getObject==lm
+      })
+      val a = vgStat.head.getScoreArray.toList.map(_.toDouble)
+      a
+  }
+
+
   val tripletHeadDependencyRelation = property(triplets, cache = true) {
     r: Relation =>
       val (first, second, third) = getTripletArguments(r)
