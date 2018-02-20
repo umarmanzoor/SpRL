@@ -7,7 +7,7 @@ import edu.illinois.cs.cogcomp.lbjava.learn.Learner
 import edu.tulane.cs.hetml.nlp.BaseTypes.Relation
 import edu.tulane.cs.hetml.nlp.sprl.Triplets.MultiModalSpRLDataModel._
 
-class RCC8ECSupport extends Learner("sprl.VisualGenomeEC") {
+class BinaryRCC8Support(rcc8: String) extends Learner("sprl.VisualGenomeRcc8") {
 
   override def allowableValues: Array[String] = {
     Array[String]("false", "true")
@@ -33,8 +33,32 @@ class RCC8ECSupport extends Learner("sprl.VisualGenomeEC") {
       result.put("false", 0.0)
     }
     else {
-      val score = vgStat.head.getEcScore
-      if (score <= 0) {
+
+      val scoreVal =
+        if(rcc8=="EC")
+          vgStat.head.getEcScore
+        else if (rcc8=="DC")
+          vgStat.head.getDcScore
+        else if(rcc8=="PO")
+          vgStat.head.getPoScore
+        else if(rcc8=="TPP")
+          vgStat.head.getTppScore
+        else if(rcc8=="TPPi")
+          vgStat.head.getTppiScore
+        else if(rcc8=="NTTP")
+          vgStat.head.getNtppScore
+        else if(rcc8=="NTTPi")
+          vgStat.head.getNtppiScore
+        else if(rcc8=="EQ")
+          vgStat.head.getEqScore
+        else
+          -1.0
+
+      val score = scoreVal.asInstanceOf[Double]
+      if(score == -1.0)
+        println("Warning: Score not found...")
+
+      if (score <= 99) {
         result.put("none", 0.0)
         result.put("true", 0.0)
         result.put("false", 1.0)

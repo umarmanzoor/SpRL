@@ -34,7 +34,7 @@ class VisualGenomeRCC8Support extends Learner("sprl.VisualGenomeRCC8") {
     }
     else {
       val scores = vgStat.head.getScoreRCC8
-      val score =  scores.max //vgStat.head.getEcScore
+      val score =  vgStat.head.getPoScore //scores.max
       if (score <= 0) {
         result.put("none", 0.0)
         result.put("true", 0.0)
