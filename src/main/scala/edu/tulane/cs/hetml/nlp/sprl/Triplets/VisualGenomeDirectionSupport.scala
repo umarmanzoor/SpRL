@@ -7,7 +7,7 @@ import edu.illinois.cs.cogcomp.lbjava.learn.Learner
 import edu.tulane.cs.hetml.nlp.BaseTypes.Relation
 import edu.tulane.cs.hetml.nlp.sprl.Triplets.MultiModalSpRLDataModel._
 
-class VisualGenomeSupportClassifier extends Learner("sprl.VisualGenomeClassifier") {
+class VisualGenomeDirectionSupport extends Learner("sprl.VisualGenomeClassifier") {
 
   override def allowableValues: Array[String] = {
     Array[String]("false", "true")
@@ -33,9 +33,9 @@ class VisualGenomeSupportClassifier extends Learner("sprl.VisualGenomeClassifier
       result.put("false", 0.0)
     }
     else {
-      val scores = vgStat.head.getScoreArray
+      val scores = vgStat.head.getScoreDirection
       val score = scores.max
-      if (score <= 50) {
+      if (score <= 0) {
         result.put("none", 0.0)
         result.put("true", 0.0)
         result.put("false", 1.0)

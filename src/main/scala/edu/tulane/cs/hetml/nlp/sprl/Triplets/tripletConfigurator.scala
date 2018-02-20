@@ -18,8 +18,8 @@ object tripletConfigurator {
   val model = FeatureSets.BaseLine
   var isTrain = false
   WordasClassifierConfigurator.isTrain = isTrain
-  val usePreprocessedVisualGenome = false
-  val useW2VViusalGenome = true
+  val usePreprocessedVisualGenome = true
+  val useW2VViusalGenome = false
   val trainTestTogether = false
   val jointTrain = false
   val iterations = 50

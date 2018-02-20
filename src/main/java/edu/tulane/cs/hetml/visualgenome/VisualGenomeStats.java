@@ -25,8 +25,8 @@ public class VisualGenomeStats {
         this.object=object;
         this.ecScore=ecScore;
         this.dcScore=dcScore;
-        this.eqScore=eqScore;
-        this.poScore=poScore;
+        this.ntppScore=ntppScore;
+        this.ntppiScore=ntppiScore;
         this.tppScore=tppScore;
         this.tppiScore=tppiScore;
         this.poScore=poScore;
@@ -35,6 +35,48 @@ public class VisualGenomeStats {
         this.belowScore=belowScore;
         this.leftScore=leftScore;
         this.rightScore=rightScore;
+    }
+
+    public Double[] getScoreArray() {
+        Double[] scores = new Double[12];
+        scores[0] = ecScore;
+        scores[1] = dcScore;
+        scores[2] = tppScore;
+        scores[3] = tppiScore;
+        scores[4] = ntppScore;
+        scores[5] = ntppiScore;
+        scores[6] = eqScore;
+        scores[7] = poScore;
+        scores[8] = aboveScore;
+        scores[9] = belowScore;
+        scores[10] = leftScore;
+        scores[11] = rightScore;
+
+        return scores;
+    }
+
+    public Double[] getScoreRCC8() {
+        Double[] scores = new Double[8];
+        scores[0] = ecScore;
+        scores[1] = dcScore;
+        scores[2] = tppScore;
+        scores[3] = tppiScore;
+        scores[4] = ntppScore;
+        scores[5] = ntppiScore;
+        scores[6] = eqScore;
+        scores[7] = poScore;
+
+        return scores;
+    }
+
+    public Double[] getScoreDirection() {
+        Double[] scores = new Double[4];
+        scores[0] = aboveScore;
+        scores[1] = belowScore;
+        scores[2] = leftScore;
+        scores[3] = rightScore;
+
+        return scores;
     }
 
     public String getPredicate() {

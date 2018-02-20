@@ -1064,7 +1064,6 @@ object MultiModalSpRLDataModel extends DataModel {
     })
   }
 
-
   private def getPairArguments(r: Relation): (Phrase, Phrase) = {
     ((pairs(r) ~> pairToFirstArg).head, (pairs(r) ~> pairToSecondArg).head)
   }

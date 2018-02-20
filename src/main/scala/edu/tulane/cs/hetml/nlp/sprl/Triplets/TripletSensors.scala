@@ -6,6 +6,7 @@ import edu.tulane.cs.hetml.nlp.sprl.Helpers.WordClassifierHelper
 import MultiModalSpRLDataModel._
 import edu.tulane.cs.hetml.nlp.sprl.MultiModalSpRLSensors.matchingCandidates
 import edu.tulane.cs.hetml.vision.{ImageTriplet, Segment, WordSegment}
+import edu.tulane.cs.hetml.visualgenome.VisualGenomeStats
 
 object TripletSensors {
   lazy val alignmentHelper = new WordClassifierHelper()

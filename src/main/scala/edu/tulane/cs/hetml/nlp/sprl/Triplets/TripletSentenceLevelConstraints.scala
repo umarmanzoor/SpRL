@@ -14,7 +14,11 @@ import scala.collection.JavaConversions._
 object TripletSentenceLevelConstraints {
   val imageSupportsSp2 = new ImageSupportsSpClassifier2()
   val imageSupportsSp = new ImageSupportsSpClassifier()
+  val visualGenomeClassifier = new VisualGenomeSupportClassifier()
+  val visualGenomeRCC8Support = new VisualGenomeRCC8Support()
+  val visualGenomeDirectionSupport = new VisualGenomeDirectionSupport()
   val wordAsClassifierHelper = TripletSensors.alignmentHelper
+
 
   val roleShouldHaveRel = ConstrainedClassifier.constraint[Sentence] {
     var a: FirstOrderConstraint = null
@@ -247,6 +251,79 @@ object TripletSentenceLevelConstraints {
       a
   }
 
+  val rCC8SupportByVisualGenome  = ConstrainedClassifier.constraint[Sentence] {
+    var a: FirstOrderConstraint = null
+    s: Sentence =>
+      a = new FirstOrderConstant(true)
+      (sentences(s) ~> sentenceToTriplets).foreach {
+        x =>
+          a = a and ((visualGenomeRCC8Support on x is "true") ==>
+            (TripletGeneralTypeClassifier on x is "region"))
+      }
+      a
+  }
+
+  val rCC8DiscardByVisualGenome  = ConstrainedClassifier.constraint[Sentence] {
+    var a: FirstOrderConstraint = null
+    s: Sentence =>
+      a = new FirstOrderConstant(true)
+      (sentences(s) ~> sentenceToTriplets).foreach {
+        x =>
+          a = a and ((visualGenomeRCC8Support on x is "false") ==>
+            (TripletRelationClassifier on x is "false"))
+      }
+      a
+  }
+
+  val diectionSupportByVisualGenome  = ConstrainedClassifier.constraint[Sentence] {
+    var a: FirstOrderConstraint = null
+    s: Sentence =>
+      a = new FirstOrderConstant(true)
+      (sentences(s) ~> sentenceToTriplets).foreach {
+        x =>
+          a = a and ((visualGenomeDirectionSupport on x is "true") ==>
+            (TripletRelationClassifier on x is "true"))
+      }
+      a
+  }
+
+  val diectionDiscardByVisualGenome  = ConstrainedClassifier.constraint[Sentence] {
+    var a: FirstOrderConstraint = null
+    s: Sentence =>
+      a = new FirstOrderConstant(true)
+      (sentences(s) ~> sentenceToTriplets).foreach {
+        x =>
+          a = a and ((visualGenomeDirectionSupport on x is "false") ==>
+            (TripletRelationClassifier on x is "false"))
+      }
+      a
+  }
+
+
+  val approveRelationByVisualGenome = ConstrainedClassifier.constraint[Sentence] {
+    var a: FirstOrderConstraint = null
+    s: Sentence =>
+      a = new FirstOrderConstant(true)
+      (sentences(s) ~> sentenceToTriplets).foreach {
+        x =>
+          a = a and ((visualGenomeClassifier on x is "true") ==>
+            (TripletRelationClassifier on x is "true"))
+      }
+      a
+  }
+
+  val discardRelationByVisualGenome = ConstrainedClassifier.constraint[Sentence] {
+    var a: FirstOrderConstraint = null
+    s: Sentence =>
+      a = new FirstOrderConstant(true)
+      (sentences(s) ~> sentenceToTriplets).foreach {
+        x =>
+          a = a and ((visualGenomeClassifier on x is "false") ==>
+            (TripletRelationClassifier on x is "false"))
+      }
+      a
+  }
+
   val discardRelationByImage = ConstrainedClassifier.constraint[Sentence] {
     var a: FirstOrderConstraint = null
     s: Sentence =>
@@ -268,8 +345,16 @@ object TripletSentenceLevelConstraints {
           boostTrajector(x) and
           boostLandmark(x) and
           boostTripletByGeneralType(x) and
-          boostGeneralByDirectionMulti(x) and
-          boostGeneralByRegionMulti(x)
+          diectionSupportByVisualGenome(x)
+          //rCC8DiscardByVisualGenome(x)
+      //rCC8SupportByVisualGenome(x) //and
+          //diectionByVisualGenome(x)
+      //boostGeneralByDirectionMulti(x) and
+          //boostGeneralByRegionMulti(x) and
+
+
+
+      //approveRelationByVisualGenome(x)
 
       if (tripletConfigurator.usePrepositions) {
         if(tripletConfigurator.alignmentMethod == "topN"){
