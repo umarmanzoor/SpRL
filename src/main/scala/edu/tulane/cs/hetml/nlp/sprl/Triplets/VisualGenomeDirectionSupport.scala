@@ -35,7 +35,7 @@ class VisualGenomeDirectionSupport extends Learner("sprl.VisualGenomeClassifier"
     else {
       val scores = vgStat.head.getScoreDirection
       val score = scores.max
-      if (score <= 0) {
+      if (score <= 99) {
         result.put("none", 0.0)
         result.put("true", 0.0)
         result.put("false", 1.0)

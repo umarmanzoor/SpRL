@@ -62,12 +62,6 @@ object TripletSentenceLevelConstraintClassifiers {
     override val pathToHead = Some(-sentenceToTriplets)
   }
 
-  object PrepositionConstraintClassifier extends ConstrainedClassifier[ImageTriplet, Sentence](PrepositionClassifier) {
-    def subjectTo = tripletConstraints
-
-    override val solver = erSolver
-    override val pathToHead = Some(-sentenceToVisualTriplet)
-  }
   class ConstrainedSingleWordAsClassifier(w: String)
     extends ConstrainedClassifier[WordSegment, Sentence](alignmentHelper.trainedWordClassifier(w)){
 

@@ -1,6 +1,7 @@
 package edu.tulane.cs.hetml.nlp.sprl.Triplets
 
 import java.io.{File, FileOutputStream, PrintStream}
+
 import edu.illinois.cs.cogcomp.saul.classifier.{ConstrainedClassifier, JointTrainSparsePerceptron, Learnable, Results}
 import edu.illinois.cs.cogcomp.saul.util.Logging
 import edu.tulane.cs.hetml.nlp.BaseTypes.{Phrase, Relation, Sentence}
@@ -13,6 +14,7 @@ import edu.tulane.cs.hetml.nlp.sprl.Triplets.TripletSentenceLevelConstraintClass
 import edu.tulane.cs.hetml.nlp.sprl.VisualTriplets.VisualTripletClassifiers.VisualTripletClassifier
 import tripletConfigurator._
 import org.apache.commons.io.FileUtils
+
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 
@@ -68,19 +70,8 @@ object MultiModalTripletApp extends App with Logging {
     x.modelDir = s"models/mSpRL/triplet/$classifiersModel/"
     x.modelSuffix = suffix
   })
-  if (usePrepositions) {
-    PrepositionClassifier.modelDir = s"models/mSpRL/triplet/$featureSet/"
-    PrepositionClassifier.modelSuffix = suffix
-  }
 
   FileUtils.forceMkdir(new File(resultsDir))
-
-  // train prepositions from external data
-  if (isTrain && trainPrepositionClassifier && usePrepositions) {
-    populateVisualTripletsFromExternalData()
-    PrepositionClassifier.learn(iterations)
-    visualTriplets.clear()
-  }
 
   populateRoleDataFromAnnotatedCorpus()
 
@@ -136,9 +127,9 @@ object MultiModalTripletApp extends App with Logging {
       val visualTripletsFiltered = visualTriplets().toList.filter(x => x.getSp != null)
       logger.info("Aligned visual triplets in train:" + visualTripletsFiltered.size)
 
-      PrepositionClassifier.learn(10, visualTripletsFiltered)
-      PrepositionClassifier.test(visualTripletsFiltered)
-      PrepositionClassifier.save()
+      VisualTripletClassifier.learn(10, visualTripletsFiltered)
+      VisualTripletClassifier.test(visualTripletsFiltered)
+      VisualTripletClassifier.save()
     }
     if (jointTrain) {
       logger.info("====================================")
@@ -170,7 +161,8 @@ object MultiModalTripletApp extends App with Logging {
 
     if (!trainTestTogether) {
       if (usePrepositions)
-        //PrepositionClassifier.load()
+        VisualTripletClassifier.modelDir = s"models/mSpRL/VisualTriplets/"
+        VisualTripletClassifier.modelSuffix = "preposition"
         VisualTripletClassifier.load()
       classifiers.foreach(x => x.load())
     }
@@ -186,16 +178,13 @@ object MultiModalTripletApp extends App with Logging {
       x => IndicatorRoleClassifier(x) == "true",
       x => lmCandidatesTest.exists(_.getId == x.getId))
 
-//    val gtTruePredictions = triplets().filter(x => tripletIsRelation(x) == "Relation" && TripletRelationClassifier(x)=="true")
-//    val gtFalsePredictions = triplets().filter(x => tripletIsRelation(x) == "Relation" && TripletRelationClassifier(x)=="false")
-//    val canFalsePred = triplets().filter(x => tripletIsRelation(x) != "Relation" && TripletRelationClassifier(x)=="true")
+    val gtTruePredictions = triplets().filter(x => tripletIsRelation(x) == "Relation" && TripletRelationClassifier(x)=="true")
+    val gtFalsePredictions = triplets().filter(x => tripletIsRelation(x) == "Relation" && TripletRelationClassifier(x)=="false")
+    val canFalsePred = triplets().filter(x => tripletIsRelation(x) != "Relation" && TripletRelationClassifier(x)=="true")
 
-    //    val gtRel = triplets().filter(t=> t.getProperty("Relation")=="true")
-//    val dummyClassifier = new VisualGenomeSupportClassifier()
-//    val scores = triplets().filter(r => {
-//      val s = dummyClassifier.scores(r)
-//      s.getScore("true").score > 0
-//    })
+    val gtRel = triplets().filter(t=> t.getProperty("Relation")=="true")
+
+    val lm = gtRel.map(r=> tripletLmWordForm(r))
 
     if (populateImages) {
       val gtRels = triplets().filter(x => tripletIsRelation(x) == "Relation"
@@ -231,7 +220,7 @@ object MultiModalTripletApp extends App with Logging {
           ReportHelper.saveEvalResults(outStream, s"${x.getClassSimpleNameForClassifier}(within data model)", res)
       }
       if (usePrepositions && visualTripletsFiltered.nonEmpty) {
-        val prepResult = PrepositionClassifier.test(visualTripletsFiltered)
+        val prepResult = VisualTripletClassifier.test(visualTripletsFiltered)
         ReportHelper.saveEvalResults(outStream, s"Preposition(within data model)", prepResult)
       }
       reportForErrorAnalysis(x => TripletRelationClassifier(x),

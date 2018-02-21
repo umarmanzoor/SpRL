@@ -2,10 +2,11 @@ package edu.tulane.cs.hetml.nlp.sprl.VisualTriplets
 
 import edu.illinois.cs.cogcomp.saul.datamodel.DataModel
 import edu.tulane.cs.hetml.nlp.BaseTypes.{Document, Sentence, Token}
-import edu.tulane.cs.hetml.nlp.LanguageBaseTypeSensors.{getHeadword, getPos}
+import edu.tulane.cs.hetml.nlp.LanguageBaseTypeSensors.getPos
 import edu.tulane.cs.hetml.vision._
 import edu.tulane.cs.hetml.nlp.sprl.MultiModalSpRLSensors._
 import edu.tulane.cs.hetml.nlp.LanguageBaseTypeSensors._
+import edu.tulane.cs.hetml.visualgenome.VisualGenomeStats
 
 /** Created by Umar on 2017-11-09.
   */
@@ -14,6 +15,7 @@ object VisualTripletsDataModel extends DataModel {
   val visualTriplets = node[ImageTriplet]
   val sentences = node[Sentence]
   val tokens = node[Token]
+  val visualGenomeStats = node[VisualGenomeStats]
 
   val tripletToSentence = edge(visualTriplets, sentences)
   tripletToSentence.addReverseSensor((x: ImageTriplet) => {
@@ -30,6 +32,21 @@ object VisualTripletsDataModel extends DataModel {
   val visualTripletLabel = property(visualTriplets) {
     t: ImageTriplet =>
       t.getSp.toLowerCase
+  }
+
+  val visualTripletGnomeStats = property(visualTriplets) {
+    t: ImageTriplet =>
+      val rels = visualGenomeStats().filter(r => {
+        r.getPredicate.toLowerCase==t.getSp.toLowerCase &&
+          (if((t.getTrajector.toLowerCase.split(" ").map(_.contains(r.getSubject)).filter(_==true)).size > 0) true else false) &&
+          (if((t.getLandmark.toLowerCase.split(" ").map(_.contains(r.getObject)).filter(_==true)).size > 0) true else false)
+      })
+      val a =
+        if(rels.size>0)
+          rels.head.getScoreArray.toList.map(_.toDouble)
+        else
+          List.fill(12)(0.0)
+      a
   }
 
   val visualTripletTrajector = property(visualTriplets) {

@@ -9,9 +9,10 @@ import edu.tulane.cs.hetml.nlp.sprl.Helpers._
 import MultiModalSpRLDataModel.{segments, _}
 import edu.tulane.cs.hetml.nlp.sprl.Triplets.TripletSensors.alignmentHelper
 import edu.tulane.cs.hetml.nlp.sprl.Triplets.tripletConfigurator.{isTrain, _}
-import edu.tulane.cs.hetml.vision.{ImageTripletReader, Segment, WordSegment}
+import edu.tulane.cs.hetml.vision.{ImageTripletReader, JSONReader, Segment, WordSegment}
 import edu.tulane.cs.hetml.visualgenome.VisualGenomeReader
 import java.io._
+
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 import edu.tulane.cs.hetml.nlp.sprl.MultiModalSpRLSensors._
@@ -162,18 +163,6 @@ object MultiModalPopulateData extends Logging {
     triplets.populate(candidateRelations, isTrain)
 
     logger.info("Data population finished.")
-  }
-
-  def populateVisualTripletsFromExternalData(): Unit = {
-    val flickerTripletReader = new ImageTripletReader("data/mSprl/saiapr_tc-12/imageTriplets", "Flickr30k.majorityhead")
-    val msCocoTripletReader = new ImageTripletReader("data/mSprl/saiapr_tc-12/imageTriplets", "MSCOCO.originalterm")
-
-    val externalTrainTriplets = flickerTripletReader.trainImageTriplets ++ msCocoTripletReader.trainImageTriplets
-
-    if (trainPrepositionClassifier && isTrain) {
-      println("Populating Visual Triplets from External Dataset...")
-      visualTriplets.populate(externalTrainTriplets, isTrain)
-    }
   }
 
   def getAdjustedSegments(segments: List[Segment]): List[Segment] = {

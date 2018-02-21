@@ -29,6 +29,7 @@ public class VisualGenomeReader {
     }
 
     public void loadRelations(String directory) throws IOException {
+        System.out.println("Loading Visual Genome Relations from File...");
         visualgenomeRelations = new ArrayList<>();
         String file = directory + "/VGData/flat_relations.txt";
         BufferedReader reader = new BufferedReader(new FileReader(file));

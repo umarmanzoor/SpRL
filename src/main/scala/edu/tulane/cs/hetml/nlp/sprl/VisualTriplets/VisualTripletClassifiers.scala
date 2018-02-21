@@ -16,7 +16,7 @@ object VisualTripletClassifiers {
       visualTripletLandmarkAspectRatio, visualTripletTrajectorAreaWRTBbox, visualTripletLandmarkAreaWRTBbox, visualTripletIOU,
       visualTripletEuclideanDistance, visualTripletTrajectorAreaWRTImage, visualTripletLandmarkAreaWRTImage,
       visualTripletBelow, visualTripletAbove, visualTripletLeft, visualTripletRight, visualTripletUnion, visualTripletIntersection,
-      visualTripletTrajectorW2V, visualTripletlandmarkW2V
+      visualTripletTrajectorW2V, visualTripletlandmarkW2V, visualTripletGnomeStats
     )
   }
 }

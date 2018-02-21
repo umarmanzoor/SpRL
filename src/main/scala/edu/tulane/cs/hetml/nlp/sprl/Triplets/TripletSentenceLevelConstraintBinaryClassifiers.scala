@@ -88,34 +88,4 @@ object TripletSentenceLevelConstraintBinaryClassifiers {
     override val solver = erSolver
     override val pathToHead = Some(-sentenceToTriplets)
   }
-
-  object PrepositionAboveConstraintClassifier extends ConstrainedClassifier[ImageTriplet, Sentence](PrepositionAboveClassifier) {
-    def subjectTo = tripletConstraints
-
-    override val solver = erSolver
-    override val pathToHead = Some(-sentenceToVisualTriplet)
-  }
-
-  object PrepositionOnConstraintClassifier extends ConstrainedClassifier[ImageTriplet, Sentence](PrepositionOnClassifier) {
-    def subjectTo = tripletConstraints
-
-    override val solver = erSolver
-    override val pathToHead = Some(-sentenceToVisualTriplet)
-  }
-
-  object PrepositionInConstraintClassifier extends ConstrainedClassifier[ImageTriplet, Sentence](PrepositionInClassifier) {
-    def subjectTo = tripletConstraints
-
-    override val solver = erSolver
-    override val pathToHead = Some(-sentenceToVisualTriplet)
-  }
-
-  object PrepositionInFrontOfConstraintClassifier extends ConstrainedClassifier[ImageTriplet, Sentence](PrepositionInFrontOfClassifier) {
-    def subjectTo = tripletConstraints
-
-    override val solver = erSolver
-    override val pathToHead = Some(-sentenceToVisualTriplet)
-  }
-
-
 }

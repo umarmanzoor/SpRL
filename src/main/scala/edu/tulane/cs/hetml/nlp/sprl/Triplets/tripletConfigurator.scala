@@ -24,8 +24,8 @@ object tripletConfigurator {
   val jointTrain = false
   val iterations = 50
   val useConstraints = true
-  val usePrepositions = false
-  val trainPrepositionClassifier = false
+  val usePrepositions = true
+  val trainPrepositionClassifier = true
   val alignmentMethod = "classifier" // possible values: "classifier" "gold", "w2v", "topN"
   val topAlignmentCount = 3
   var populateImages = true //model == FeatureSets.WordEmbeddingPlusImage || model == FeatureSets.BaseLineWithImage

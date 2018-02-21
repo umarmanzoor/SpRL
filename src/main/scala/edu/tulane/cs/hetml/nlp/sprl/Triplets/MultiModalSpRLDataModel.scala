@@ -846,15 +846,15 @@ object MultiModalSpRLDataModel extends DataModel {
 
   val tripletScoreStats = property(triplets, cache = true) {
     r: Relation =>
-      //val (first, second, third) = getTripletArguments(r)
-      val args = tripletHeadWordForm(r).split("::")
-      val tr = args(0)
-      val lm = args(2)
-      val sp = args(1)
+      val (first, second, third) = getTripletArguments(r)
+//      val args = tripletHeadWordForm(r).split("::")
+//      val tr = args(0)
+//      val lm = args(2)
+//      val sp = args(1)
 
-//      val tr = headWordLemma(first)
-//      val sp = headWordLemma(second)
-//      val lm = headWordLemma(third)
+      val tr = headWordLemma(first)
+      val sp = headWordLemma(second)
+      val lm = headWordLemma(third)
       val vgStat = visualGenomeStats().filter(v => {
         v.getPredicate==sp && v.getSubject==tr && v.getObject==lm
       })
@@ -898,6 +898,21 @@ object MultiModalSpRLDataModel extends DataModel {
       val (first, second, third) = getTripletArguments(r)
       headSpatialContext(first) + "::" + headSpatialContext(second)
   }
+
+//  val visualTripletGnomeStats = property(visualTriplets) {
+//    t: ImageTriplet =>
+//      val rels = visualGenomeStats().filter(r => {
+//        r.getPredicate.toLowerCase==t.getSp.toLowerCase &&
+//          (if((t.getTrajector.toLowerCase.split(" ").map(_.contains(r.getSubject)).filter(_==true)).size > 0) true else false) &&
+//          (if((t.getLandmark.toLowerCase.split(" ").map(_.contains(r.getObject)).filter(_==true)).size > 0) true else false)
+//      })
+//      val a =
+//        if(rels.size>0)
+//          rels.head.getScoreArray.toList.map(_.toDouble)
+//        else
+//          List.fill(12)(0.0)
+//      a
+//  }
 
   val visualTripletLabel = property(visualTriplets, cache = true) {
     t: ImageTriplet =>
@@ -1071,6 +1086,7 @@ object MultiModalSpRLDataModel extends DataModel {
   }
 
   def getImageSpScores(r: ImageTriplet) = {
+    //val x = VisualTripletClassifier.classifier.scores(r)
     val x = VisualTripletClassifier.classifier.scores(r)
     val min = x.toArray.map(_.score).min
     val sum = x.toArray.map(_.score - min).sum

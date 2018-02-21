@@ -17,6 +17,7 @@ public class JSONReader {
     public Hashtable<Integer, String> imageInfo;
 
     public void readJsonFile(String directory) throws IOException, InterruptedException {
+        System.out.println("Reading Data from Jason File...");
         allImageTriplets = new ArrayList<>();
         imageInfo = new Hashtable<Integer, String>();
 
@@ -31,7 +32,6 @@ public class JSONReader {
 
             for(int i = 0 ; i< jsonObject.size() ;i++){
               JSONObject arr = (JSONObject) jsonObject.get(i);
-              System.out.println(i);
               JSONArray arguments = (JSONArray) arr.get("relationships");
 
               int imageId = Integer.parseInt(arr.get("image_id").toString());
@@ -77,6 +77,7 @@ public class JSONReader {
         } catch (Exception e) {
            e.printStackTrace();
         }
+        System.out.println("Finished Reading Jason file...");
     }
 
     private void readImageInfo(String file) throws IOException, InterruptedException {
