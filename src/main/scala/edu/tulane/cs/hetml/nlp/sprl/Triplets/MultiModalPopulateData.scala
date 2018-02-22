@@ -16,6 +16,7 @@ import java.io._
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 import edu.tulane.cs.hetml.nlp.sprl.MultiModalSpRLSensors._
+import me.tongfei.progressbar.ProgressBar
 /** Created by Taher on 2017-02-12.
   */
 
@@ -118,7 +119,7 @@ object MultiModalPopulateData extends Logging {
     )
     xmlReader.setTripletRelationTypes(candidateRelations)
 
-    vgReader.loadStats(resultsDir)
+    vgReader.loadStats(resultsDir, isTrain)
     val vgStats = vgReader.visualGenomeStats.toList
 
     visualGenomeStats.populate(vgStats)
@@ -218,8 +219,8 @@ object MultiModalPopulateData extends Logging {
   }
 
   def saveRelationsScores() = {
-
-    val gtRel = triplets().toList //filter(t=> t.getProperty("Relation")=="true")
+    val p = new ProgressBar("Processing Relations", triplets().size)
+    val gtRel = triplets().toList
     print(gtRel.size)
     val visualRelFilename =
       if(!useW2VViusalGenome)
@@ -235,74 +236,79 @@ object MultiModalPopulateData extends Logging {
 
     val pw = new PrintWriter(new File(visualRelFilename))
     var count = 0
+    p.start()
     gtRel.foreach(t => {
-      val r = tripletHeadWordForm(t).split("::")
-      val tr = r(0)
-      val lm = r(2)
-      val sp = r(1)
-      val vgRels = visualgenomeRelationsList.filter(r => {
-        if(useW2VViusalGenome)
-          r.getPredicate==sp && (getGoogleSimilarity(r.getSubject,tr) >= 0.50) && (getGoogleSimilarity(r.getObject,lm)>=0.50)
-        else
-          r.getPredicate==sp && r.getSubject==tr && r.getObject==lm
-      })
+      p.step()
+      val (first,second,third) = getTripletArguments(t)//tripletHeadWordForm(t).split("::")
+      val tr = headWordLemma(first)
+      val lm = headWordLemma(third)
+      val sp = headWordFrom(second)
 
-      if(vgRels.size>0) {
-        // EC
-        val ecRels = vgRels.filter(r => r.getRcc8Label=="EC")
-        val ecScore = "%1.2f".format(ecRels.size.toDouble / vgRels.size * 100.00)
-        // DC
-        val dcRels = vgRels.filter(r => r.getRcc8Label=="DC")
-        val dcScore = "%1.2f".format(dcRels.size.toDouble / vgRels.size * 100.00)
-        // TPP
-        val tppRels = vgRels.filter(r => r.getRcc8Label=="TPP")
-        val tppScore = "%1.2f".format(tppRels.size.toDouble / vgRels.size * 100.00)
-        // TPPi
-        val tppiRels = vgRels.filter(r => r.getRcc8Label=="TPPi")
-        val tppiScore = "%1.2f".format(tppiRels.size.toDouble / vgRels.size * 100.00)
-        // NTTP
-        val nttpRels = vgRels.filter(r => r.getRcc8Label=="NTPP")
-        val nttpScore = "%1.2f".format(nttpRels.size.toDouble / vgRels.size * 100.00)
-        // NTPPi
-        val nttpiRels = vgRels.filter(r => r.getRcc8Label=="NTPPi")
-        val nttpiScore = "%1.2f".format(nttpiRels.size.toDouble / vgRels.size * 100.00)
-        // EQ
-        val eqRels = vgRels.filter(r => r.getRcc8Label=="EQ")
-        val eqScore = "%1.2f".format(eqRels.size.toDouble / vgRels.size * 100.00)
-        // PO
-        val poRels = vgRels.filter(r => r.getRcc8Label=="PO")
-        val poScore = "%1.2f".format(poRels.size.toDouble / vgRels.size * 100.00)
+      val relKey =  sp + "," + tr + "," + lm
+      if(!(distinctRels.keySet.exists(_ == relKey))) {
+        val vgRels = visualgenomeRelationsList.filter(r => {
+          if(useW2VViusalGenome)
+            r.getPredicate==sp && (getGoogleSimilarity(r.getSubject,tr) >= 0.50) && (getGoogleSimilarity(r.getObject,lm)>=0.50)
+          else
+            r.getPredicate==sp && r.getSubject==tr && r.getObject==lm
+        })
 
-        // Above
-        val aboveRels = vgRels.filter(r => r.getDirectionLabel=="ABOVE")
-        val aboveScore = "%1.2f".format(aboveRels.size.toDouble / vgRels.size * 100.00)
-        // Below
-        val belowRels = vgRels.filter(r => r.getDirectionLabel=="BELOW")
-        val belowScore = "%1.2f".format(belowRels.size.toDouble / vgRels.size * 100.00)
-        // Left
-        val leftRels = vgRels.filter(r => r.getDirectionLabel=="LEFT")
-        val leftScore = "%1.2f".format(leftRels.size.toDouble / vgRels.size * 100.00)
-        // Right
-        val rightRels = vgRels.filter(r => r.getDirectionLabel=="RIGHT")
-        val rightScore = "%1.2f".format(rightRels.size.toDouble / vgRels.size * 100.00)
+        if(vgRels.size>0) {
+          // EC
+          val ecRels = vgRels.filter(r => r.getRcc8Label=="EC")
+          val ecScore = "%1.2f".format(ecRels.size.toDouble / vgRels.size)
+          // DC
+          val dcRels = vgRels.filter(r => r.getRcc8Label=="DC")
+          val dcScore = "%1.2f".format(dcRels.size.toDouble / vgRels.size)
+          // TPP
+          val tppRels = vgRels.filter(r => r.getRcc8Label=="TPP")
+          val tppScore = "%1.2f".format(tppRels.size.toDouble / vgRels.size)
+          // TPPi
+          val tppiRels = vgRels.filter(r => r.getRcc8Label=="TPPi")
+          val tppiScore = "%1.2f".format(tppiRels.size.toDouble / vgRels.size)
+          // NTTP
+          val nttpRels = vgRels.filter(r => r.getRcc8Label=="NTPP")
+          val nttpScore = "%1.2f".format(nttpRels.size.toDouble / vgRels.size)
+          // NTPPi
+          val nttpiRels = vgRels.filter(r => r.getRcc8Label=="NTPPi")
+          val nttpiScore = "%1.2f".format(nttpiRels.size.toDouble / vgRels.size)
+          // EQ
+          val eqRels = vgRels.filter(r => r.getRcc8Label=="EQ")
+          val eqScore = "%1.2f".format(eqRels.size.toDouble / vgRels.size)
+          // PO
+          val poRels = vgRels.filter(r => r.getRcc8Label=="PO")
+          val poScore = "%1.2f".format(poRels.size.toDouble / vgRels.size)
 
-        val relKey =  sp + "," + tr + "," + lm
-        val relStats = vgRels.size + "," + ecScore + "," + dcScore + "," + tppScore + "," + tppiScore + "," + nttpScore + "," + nttpiScore + "," + eqScore + "," + poScore + "," + aboveScore + "," + belowScore + "," + leftScore + "," + rightScore
-        if(!(distinctRels.keySet.exists(_ == relKey)))
+          // Above
+          val aboveRels = vgRels.filter(r => r.getDirectionLabel=="ABOVE")
+          val aboveScore = "%1.2f".format(aboveRels.size.toDouble / vgRels.size)
+          // Below
+          val belowRels = vgRels.filter(r => r.getDirectionLabel=="BELOW")
+          val belowScore = "%1.2f".format(belowRels.size.toDouble / vgRels.size)
+          // Left
+          val leftRels = vgRels.filter(r => r.getDirectionLabel=="LEFT")
+          val leftScore = "%1.2f".format(leftRels.size.toDouble / vgRels.size)
+          // Right
+          val rightRels = vgRels.filter(r => r.getDirectionLabel=="RIGHT")
+          val rightScore = "%1.2f".format(rightRels.size.toDouble / vgRels.size)
+
+
+          val relStats = vgRels.size + "," + ecScore + "," + dcScore + "," + tppScore + "," + tppiScore + "," + nttpScore + "," + nttpiScore + "," + eqScore + "," + poScore + "," + aboveScore + "," + belowScore + "," + leftScore + "," + rightScore
+
           distinctRels += (relKey -> relStats)
+          count = count + 1
+        }
+        else {
+          val relKey =  sp + "," + tr + "," + lm
+          val relStats = "0,0,0,0,0,0,0,0,0,0,0,0,0"
+          if(!(distinctRels.keySet.exists(_ == relKey)))
+            distinctRels += (relKey -> relStats)
 
-        count = count + 1
+        }
+        //println(tr + "-" + lm + "-" + sp + "-> " + vgRels.size)
       }
-      else {
-        val relKey =  sp + "," + tr + "," + lm
-        val relStats = "0,0,0,0,0,0,0,0,0,0,0,0,0"
-        if(!(distinctRels.keySet.exists(_ == relKey)))
-          distinctRels += (relKey -> relStats)
-
-      }
-
-      println(tr + "-" + lm + "-" + sp + "-> " + vgRels.size)
     })
+    p.stop()
     pw.write("Total Matched ->" + count + "\n")
     for ((k,v) <- distinctRels)
       pw.write(k + "," + v + "\n")

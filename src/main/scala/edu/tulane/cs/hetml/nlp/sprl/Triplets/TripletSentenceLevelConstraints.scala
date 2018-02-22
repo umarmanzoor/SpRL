@@ -165,7 +165,6 @@ object TripletSentenceLevelConstraints {
       a = new FirstOrderConstant(true)
       if(sentWordSegs.contains(s.getId)) {
         val pairs = sentWordSegs(s.getId)
-        //wordSegments().filter(x => x.getPhrase.getSentence.getId == s.getId).toList
         val perSeg = pairs.groupBy(_.getSegment)
         val perPhrase = pairs.groupBy(_.getPhrase)
 
@@ -207,7 +206,6 @@ object TripletSentenceLevelConstraints {
       a = new FirstOrderConstant(true)
       if(sentWordSegs.contains(s.getId)) {
         val candidateAlignments = sentWordSegs(s.getId)
-        //wordSegments().filter(x => x.getPhrase.getSentence.getId == s.getId).toList
         val candidatePhraseIds = candidateAlignments.map(_.getPhrase.getId)
         val img = (sentences(s) ~> -documentToSentence ~> documentToImage).head
         (sentences(s) ~> sentenceToTriplets)

@@ -1,11 +1,10 @@
 package edu.tulane.cs.hetml.visualgenome;
 
-import org.bytedeco.javacpp.presets.opencv_core;
-
 public class VisualGenomeStats {
     private String predicate;
     private String subject;
     private String object;
+    private int totalInstances;
     private Double ecScore;
     private Double dcScore;
     private Double eqScore;
@@ -19,7 +18,7 @@ public class VisualGenomeStats {
     private Double leftScore;
     private Double rightScore;
 
-    public void setValues(String predicate, String subject, String object, Double ecScore, Double dcScore, Double tppScore, Double tppiScore, Double ntppScore, Double ntppiScore, Double eqScore, Double poScore, Double aboveScore, Double belowScore, Double leftScore, Double rightScore) {
+    public void setValues(String predicate, String subject, String object, Double ecScore, Double dcScore, Double tppScore, Double tppiScore, Double ntppScore, Double ntppiScore, Double eqScore, Double poScore, Double aboveScore, Double belowScore, Double leftScore, Double rightScore, int totalInstances) {
         this.predicate=predicate;
         this.subject=subject;
         this.object=object;
@@ -35,6 +34,7 @@ public class VisualGenomeStats {
         this.belowScore=belowScore;
         this.leftScore=leftScore;
         this.rightScore=rightScore;
+        this.setTotalInstances(totalInstances);
     }
 
     public Double[] getScoreArray() {
@@ -197,5 +197,13 @@ public class VisualGenomeStats {
 
     public void setRightScore(Double rightScore) {
         this.rightScore = rightScore;
+    }
+
+    public int getTotalInstances() {
+        return totalInstances;
+    }
+
+    public void setTotalInstances(int totalInstances) {
+        this.totalInstances = totalInstances;
     }
 }

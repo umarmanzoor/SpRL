@@ -50,9 +50,13 @@ public class VisualGenomeReader {
         }
     }
 
-    public void loadStats(String directory) throws IOException {
+    public void loadStats(String directory, Boolean isTrain) throws IOException {
         visualGenomeStats = new ArrayList<>();
-        String file = directory + "/extactMatchRelsTest.txt";
+        String file;
+        if(isTrain)
+            file = directory + "/extactMatchRelsTrain.txt";
+        else
+            file = directory + "/extactMatchRelsTest.txt";
         BufferedReader reader = new BufferedReader(new FileReader(file));
         String line;
         line = reader.readLine();
@@ -62,7 +66,7 @@ public class VisualGenomeReader {
             String predicate = relInfo[0];
             String subject = relInfo[1];
             String object = relInfo[2];
-            //Ignore Total
+            int totalInstances = Integer.parseInt(relInfo[3]);
             Double ecScore = Double.parseDouble(relInfo[4]);
             Double dcScore = Double.parseDouble(relInfo[5]);
             Double tppScore = Double.parseDouble(relInfo[6]);
@@ -77,7 +81,7 @@ public class VisualGenomeReader {
             Double rightScore = Double.parseDouble(relInfo[15]);
 
             VisualGenomeStats vgs = new VisualGenomeStats();
-            vgs.setValues(predicate, subject, object, ecScore,dcScore,tppScore,tppiScore,nttpScore,nttpiScore,eqScore,poScore,aboveScore,belowScore,leftScore,rightScore);
+            vgs.setValues(predicate, subject, object, ecScore,dcScore,tppScore,tppiScore,nttpScore,nttpiScore,eqScore,poScore,aboveScore,belowScore,leftScore,rightScore, totalInstances);
 
             visualGenomeStats.add(vgs);
         }

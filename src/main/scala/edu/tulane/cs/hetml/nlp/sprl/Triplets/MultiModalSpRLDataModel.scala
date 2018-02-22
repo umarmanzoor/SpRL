@@ -478,6 +478,38 @@ object MultiModalSpRLDataModel extends DataModel {
       else "None"
   }
 
+  val rcc8ValuesNew = List("EC", "DC", "TPP", "TPP", "NTPP", "NTPP", "EQ", "PO")
+  val tripletRegionNew = property(triplets) {
+    r: Relation =>
+      val (first, second, third) = getTripletArguments(r)
+      val tr = headWordLemma(first)
+      val sp = headWordFrom(second)
+      val lm = headWordLemma(third)
+      val vgStat = visualGenomeStats().filter(v => {
+        v.getPredicate==sp && v.getSubject==tr && v.getObject==lm
+      })
+      val a = vgStat.head.getScoreRCC8.toList.map(_.toDouble)
+      val maxValue = a.max
+      if(maxValue > 0) {
+        val maxIndex = a.indexOf(a.max)
+        rcc8ValuesNew(maxIndex)
+      }
+      else
+        "None"
+  }
+
+  val tripletRegionNewFetures = property(triplets) {
+    r: Relation =>
+      val (first, second, third) = getTripletArguments(r)
+      val tr = headWordLemma(first)
+      val sp = headWordFrom(second)
+      val lm = headWordLemma(third)
+      val vgStat = visualGenomeStats().filter(v => {
+        v.getPredicate==sp && v.getSubject==tr && v.getObject==lm
+      })
+      vgStat.head.getScoreRCC8.toList.map(_.toDouble)
+  }
+
   val directionValues = List("above", "behind", "below", "front", "left", "right")
   val tripletDirection = property(triplets) {
     r: Relation =>
@@ -802,6 +834,18 @@ object MultiModalSpRLDataModel extends DataModel {
       headWordFrom(second)
   }
 
+  val tripletTrHeadWord = property(triplets, cache = true) {
+    r: Relation =>
+      val (first, _, _) = getTripletArguments(r)
+      headWordFrom(first)
+  }
+
+  val tripletLmHeadWord = property(triplets, cache = true) {
+    r: Relation =>
+      val (_, _, third) = getTripletArguments(r)
+      headWordFrom(third)
+  }
+
   val tripletPhrasePos = property(triplets, cache = true) {
     r: Relation =>
       val (first, second, third) = getTripletArguments(r)
@@ -847,11 +891,6 @@ object MultiModalSpRLDataModel extends DataModel {
   val tripletScoreStats = property(triplets, cache = true) {
     r: Relation =>
       val (first, second, third) = getTripletArguments(r)
-//      val args = tripletHeadWordForm(r).split("::")
-//      val tr = args(0)
-//      val lm = args(2)
-//      val sp = args(1)
-
       val tr = headWordLemma(first)
       val sp = headWordLemma(second)
       val lm = headWordLemma(third)

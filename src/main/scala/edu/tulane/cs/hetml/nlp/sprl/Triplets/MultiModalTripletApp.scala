@@ -178,13 +178,9 @@ object MultiModalTripletApp extends App with Logging {
       x => IndicatorRoleClassifier(x) == "true",
       x => lmCandidatesTest.exists(_.getId == x.getId))
 
-    val gtTruePredictions = triplets().filter(x => tripletIsRelation(x) == "Relation" && TripletRelationClassifier(x)=="true")
-    val gtFalsePredictions = triplets().filter(x => tripletIsRelation(x) == "Relation" && TripletRelationClassifier(x)=="false")
-    val canFalsePred = triplets().filter(x => tripletIsRelation(x) != "Relation" && TripletRelationClassifier(x)=="true")
-
-    val gtRel = triplets().filter(t=> t.getProperty("Relation")=="true")
-
-    val lm = gtRel.map(r=> tripletLmWordForm(r))
+//    val gtTruePredictions = triplets().filter(x => tripletIsRelation(x) == "Relation" && TripletRelationClassifier(x)=="true")
+//    val gtFalsePredictions = triplets().filter(x => tripletIsRelation(x) == "Relation" && TripletRelationClassifier(x)=="false")
+//    val canFalsePred = triplets().filter(x => tripletIsRelation(x) != "Relation" && TripletRelationClassifier(x)=="true")
 
     if (populateImages) {
       val gtRels = triplets().filter(x => tripletIsRelation(x) == "Relation"
