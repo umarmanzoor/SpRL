@@ -6,7 +6,7 @@ import edu.tulane.cs.hetml.nlp.LanguageBaseTypeSensors.getPos
 import edu.tulane.cs.hetml.vision._
 import edu.tulane.cs.hetml.nlp.sprl.MultiModalSpRLSensors._
 import edu.tulane.cs.hetml.nlp.LanguageBaseTypeSensors._
-import edu.tulane.cs.hetml.visualgenome.VisualGenomeStats
+import edu.tulane.cs.hetml.relations.VisualGenomeStats
 
 /** Created by Umar on 2017-11-09.
   */

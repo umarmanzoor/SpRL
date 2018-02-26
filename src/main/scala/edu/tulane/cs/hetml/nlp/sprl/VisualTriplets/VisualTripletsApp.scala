@@ -8,7 +8,7 @@ import edu.tulane.cs.hetml.vision._
 import edu.tulane.cs.hetml.nlp.sprl.VisualTriplets.VisualTripletsDataModel._
 import edu.tulane.cs.hetml.nlp.sprl.VisualTriplets.VisualTripletClassifiers._
 import edu.tulane.cs.hetml.nlp.sprl.WordasClassifier.WordasClassifierConfigurator.resultsDir
-import edu.tulane.cs.hetml.visualgenome.VisualGenomeReader
+import edu.tulane.cs.hetml.relations.RelationInformationReader
 import edu.tulane.cs.hetml.nlp.sprl.MultiModalSpRLSensors._
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
@@ -30,22 +30,22 @@ object VisualTripletsApp extends App {
 
   populateVisualTripletsFromExternalData()
 
-  if (isTrain) {
-
-    VisualTripletClassifier.modelDir = classifierDirectory
-    VisualTripletClassifier.modelSuffix = classifierSuffix
-    VisualTripletClassifier.learn(50)
-    VisualTripletClassifier.save()
-    VisualTripletClassifier.test(visualTriplets())
-  }
-  else {
-    VisualTripletClassifier.modelDir = classifierDirectory
-    VisualTripletClassifier.modelSuffix = classifierSuffix
-    VisualTripletClassifier.load()
-    val results = VisualTripletClassifier.test()
-    val outStream = new FileOutputStream(s"$resultsDir/VisualClassifier-VG-test.txt", false)
-    ReportHelper.saveEvalResults(outStream, "Visual triplet(within data model)", results)
-  }
+//  if (isTrain) {
+//
+//    VisualTripletClassifier.modelDir = classifierDirectory
+//    VisualTripletClassifier.modelSuffix = classifierSuffix
+//    VisualTripletClassifier.learn(50)
+//    VisualTripletClassifier.save()
+//    VisualTripletClassifier.test(visualTriplets())
+//  }
+//  else {
+//    VisualTripletClassifier.modelDir = classifierDirectory
+//    VisualTripletClassifier.modelSuffix = classifierSuffix
+//    VisualTripletClassifier.load()
+//    val results = VisualTripletClassifier.test()
+//    val outStream = new FileOutputStream(s"$resultsDir/VisualClassifier-VG-test.txt", false)
+//    ReportHelper.saveEvalResults(outStream, "Visual triplet(within data model)", results)
+//  }
 
   def populateVisualTripletsFromExternalData(): Unit = {
 //    println("Reading Visual Genome Stat Scores")
@@ -74,8 +74,8 @@ object VisualTripletsApp extends App {
 
   def saveRelationsScores() = {
     var distinctRels = scala.collection.mutable.Map[String, String]()
-    val gtRel = visualTriplets().take(10).toList
-    val vgReader = new VisualGenomeReader();
+    val gtRel = visualTriplets().toList
+    val vgReader = new RelationInformationReader();
     vgReader.loadRelations(imageDataPath);
     val visualgenomeRelationsList = vgReader.visualgenomeRelations.toList
 

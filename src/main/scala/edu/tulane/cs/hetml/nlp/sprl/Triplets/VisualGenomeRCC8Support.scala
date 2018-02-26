@@ -24,7 +24,7 @@ class VisualGenomeRCC8Support extends Learner("sprl.VisualGenomeRCC8") {
     val tr = args(0)
     val lm = args(2)
     val sp = args(1)
-    val vgStat = visualGenomeStats().filter(v => {
+    val vgStat = relationsStats().filter(v => {
       v.getPredicate==sp && v.getSubject==tr && v.getObject==lm
     })
     if (vgStat.size==0) {

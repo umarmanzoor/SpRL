@@ -1,31 +1,41 @@
-package edu.tulane.cs.hetml.visualgenome;
+package edu.tulane.cs.hetml.relations;
 
-import edu.tulane.cs.hetml.nlp.BaseTypes.Document;
-import edu.tulane.cs.hetml.nlp.Xml.NlpXmlReader;
-import edu.tulane.cs.hetml.vision.Image;
-import edu.tulane.cs.hetml.vision.RectangleHelper;
-import edu.tulane.cs.hetml.vision.Segment;
-import edu.tulane.cs.hetml.vision.SegmentPhraseHeadwordPair;
-import org.bytedeco.javacpp.presets.opencv_core;
-import sun.awt.image.ToolkitImage;
-
-import java.awt.*;
-import java.awt.geom.Rectangle2D;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 
-public class VisualGenomeReader {
+public class RelationInformationReader {
 
     public List<VisualGenomeRelations> visualgenomeRelations;
     public List<VisualGenomeStats> visualGenomeStats;
+    public List<ClefRelationsHeadwords> clefHeadwordRelations;
 
-    public VisualGenomeReader() {
+    public RelationInformationReader() {
 
+    }
+
+    public void loadClefRelationHeadwords(String directory, Boolean isTrain) throws IOException {
+        System.out.println("Loading Clef Relation Headwords from File...");
+        clefHeadwordRelations = new ArrayList<>();
+        String file;
+        if(isTrain)
+            file = directory + "/tripletHeadwords/tripletsHeadWordsTrain.txt";
+        else
+            file = directory + "/tripletHeadwords/tripletsHeadWordsTest.txt";
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] relInfo = line.split("~");
+            String id = relInfo[0];
+            String tr = relInfo[1];
+            String sp = relInfo[2];
+            String lm = relInfo[3];
+
+            ClefRelationsHeadwords crh = new ClefRelationsHeadwords(id, tr, lm, sp);
+            clefHeadwordRelations.add(crh);
+        }
     }
 
     public void loadRelations(String directory) throws IOException {

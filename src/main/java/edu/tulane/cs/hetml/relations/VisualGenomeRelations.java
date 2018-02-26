@@ -1,4 +1,4 @@
-package edu.tulane.cs.hetml.visualgenome;
+package edu.tulane.cs.hetml.relations;
 
 public class VisualGenomeRelations {
     private String rcc8Label;

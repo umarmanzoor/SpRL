@@ -110,7 +110,7 @@ object MultiModalSpRLTripletClassifiers {
   }
 
   object TripletRegionClassifier extends Learnable(triplets) {
-    def label = tripletRegionNew
+    def label = tripletRegion
 
     override lazy val classifier = new SparseNetworkLearner()
 

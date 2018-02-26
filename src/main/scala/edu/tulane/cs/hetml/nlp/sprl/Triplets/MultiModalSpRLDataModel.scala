@@ -8,7 +8,7 @@ import edu.tulane.cs.hetml.nlp.sprl.MultiModalSpRLSensors._
 import edu.tulane.cs.hetml.nlp.sprl.Triplets.TripletSensors._
 import edu.tulane.cs.hetml.nlp.sprl.VisualTriplets.VisualTripletClassifiers.VisualTripletClassifier
 import edu.tulane.cs.hetml.vision._
-import edu.tulane.cs.hetml.visualgenome.VisualGenomeStats
+import edu.tulane.cs.hetml.relations.VisualGenomeStats
 
 /** Created by Taher on 2017-01-11.
   */
@@ -39,7 +39,7 @@ object MultiModalSpRLDataModel extends DataModel {
   val segmentPhrasePairs = node[Relation]((r: Relation) => r.getId)
   val wordSegments = node[WordSegment]
   val visualTriplets = node[ImageTriplet]
-  val visualGenomeStats = node[VisualGenomeStats]
+  val relationsStats = node[VisualGenomeStats]
 
   /*
   Edges
@@ -485,7 +485,7 @@ object MultiModalSpRLDataModel extends DataModel {
       val tr = headWordLemma(first)
       val sp = headWordFrom(second)
       val lm = headWordLemma(third)
-      val vgStat = visualGenomeStats().filter(v => {
+      val vgStat = relationsStats().filter(v => {
         v.getPredicate==sp && v.getSubject==tr && v.getObject==lm
       })
       val a = vgStat.head.getScoreRCC8.toList.map(_.toDouble)
@@ -504,7 +504,7 @@ object MultiModalSpRLDataModel extends DataModel {
       val tr = headWordLemma(first)
       val sp = headWordFrom(second)
       val lm = headWordLemma(third)
-      val vgStat = visualGenomeStats().filter(v => {
+      val vgStat = relationsStats().filter(v => {
         v.getPredicate==sp && v.getSubject==tr && v.getObject==lm
       })
       vgStat.head.getScoreRCC8.toList.map(_.toDouble)
@@ -521,7 +521,10 @@ object MultiModalSpRLDataModel extends DataModel {
   val JF2_1 = property(triplets, cache = true) {
     r: Relation =>
       val (first, second, third) = getTripletArguments(r)
-      first.getText.toLowerCase + "::" + second.getText.toLowerCase + "::" + third.getText.toLowerCase
+      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+        first.getText.toLowerCase + "::" + second.getText.toLowerCase + "::" + r.getProperty("ProbableLandmark")
+      else
+        first.getText.toLowerCase + "::" + second.getText.toLowerCase + "::" + third.getText.toLowerCase
   }
 
   val JF2_2 = property(triplets, cache = true) {
@@ -539,6 +542,10 @@ object MultiModalSpRLDataModel extends DataModel {
   val JF2_3 = property(triplets, cache = true) {
     r: Relation =>
       val (first, second, third) = getTripletArguments(r)
+
+      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+        third.setText(r.getProperty("ProbableLandmark"))
+
       val (start, end) = getStartAndEndArgs(r)
 
       val toks = (triplets(r) ~> -sentenceToTriplets ~> sentenceToPhrase ~> phraseToToken)
@@ -558,6 +565,10 @@ object MultiModalSpRLDataModel extends DataModel {
   val JF2_4 = property(triplets, cache = true) {
     r: Relation =>
       val (_, second, third) = getTripletArguments(r)
+
+      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+        third.setText(r.getProperty("ProbableLandmark"))
+
       second.getText.toLowerCase + "::" + roleToSpDependencyPath(second, third)
   }
 
@@ -570,6 +581,10 @@ object MultiModalSpRLDataModel extends DataModel {
   val JF2_6 = property(triplets, cache = true) {
     r: Relation =>
       val (_, second, third) = getTripletArguments(r)
+
+      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+        third.setText(r.getProperty("ProbableLandmark"))
+
       roleToSpDependencyPath(second, third)
   }
 
@@ -585,6 +600,8 @@ object MultiModalSpRLDataModel extends DataModel {
       if (third == dummyPhrase)
         undefined
       else {
+        if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+          third.setText(r.getProperty("ProbableLandmark"))
         getWordnetHypernyms(getHeadword(third))
         ""
       }
@@ -599,6 +616,10 @@ object MultiModalSpRLDataModel extends DataModel {
   val JF2_10 = property(triplets, cache = true) {
     r: Relation =>
       val (first, second, third) = getTripletArguments(r)
+
+      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+        third.setText(r.getProperty("ProbableLandmark"))
+
       val (start, end) = getStartAndEndArgs(r)
 
       val toks = (triplets(r) ~> -sentenceToTriplets ~> sentenceToPhrase ~> phraseToToken)
@@ -660,6 +681,9 @@ object MultiModalSpRLDataModel extends DataModel {
   val JF2_14 = property(triplets, cache = true) {
     r: Relation =>
       val (first, second, third) = getTripletArguments(r)
+      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+        third.setText(r.getProperty("ProbableLandmark"))
+
       headWordLemma(first) + "::" + second.getText.toLowerCase + "::" + headWordLemma(third)
   }
 
@@ -691,6 +715,10 @@ object MultiModalSpRLDataModel extends DataModel {
   val tripletLmWordForm = property(triplets, cache = true) {
     r: Relation =>
       val (_, _, third) = getTripletArguments(r)
+
+      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+        third.setText(r.getProperty("ProbableLandmark"))
+
       wordForm(third)
   }
 
@@ -819,6 +847,9 @@ object MultiModalSpRLDataModel extends DataModel {
   val tripletHeadWordForm = property(triplets, cache = true) {
     r: Relation =>
       val (first, second, third) = getTripletArguments(r)
+      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+        third.setText(r.getProperty("ProbableLandmark"))
+
       headWordFrom(first) + "::" + headWordFrom(second) + "::" + headWordFrom(third)
   }
 
@@ -843,12 +874,19 @@ object MultiModalSpRLDataModel extends DataModel {
   val tripletLmHeadWord = property(triplets, cache = true) {
     r: Relation =>
       val (_, _, third) = getTripletArguments(r)
+
+      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+        third.setText(r.getProperty("ProbableLandmark"))
+
       headWordFrom(third)
   }
 
   val tripletPhrasePos = property(triplets, cache = true) {
     r: Relation =>
       val (first, second, third) = getTripletArguments(r)
+      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+        third.setText(r.getProperty("ProbableLandmark"))
+
       phrasePos(first) + "::" + phrasePos(second) + "::" + phrasePos(third)
   }
 
@@ -873,18 +911,27 @@ object MultiModalSpRLDataModel extends DataModel {
   val tripletLmVector = property(triplets, cache = true, ordered = true) {
     r: Relation =>
       val (_, _, third) = getTripletArguments(r)
+      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+        third.setText(r.getProperty("ProbableLandmark"))
+
       headVector(third)
   }
 
   val tripletLemma = property(triplets, cache = true) {
     r: Relation =>
       val (first, second, third) = getTripletArguments(r)
+      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+        third.setText(r.getProperty("ProbableLandmark"))
+
       lemma(first) + "::" + lemma(second) + "::" + lemma(third)
   }
 
   val tripletHeadWordLemma = property(triplets, cache = true) {
     r: Relation =>
       val (first, second, third) = getTripletArguments(r)
+      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+        third.setText(r.getProperty("ProbableLandmark"))
+
       headWordLemma(first) + "::" + headWordLemma(second) + "::" + headWordLemma(third)
   }
 
@@ -894,7 +941,7 @@ object MultiModalSpRLDataModel extends DataModel {
       val tr = headWordLemma(first)
       val sp = headWordLemma(second)
       val lm = headWordLemma(third)
-      val vgStat = visualGenomeStats().filter(v => {
+      val vgStat = relationsStats().filter(v => {
         v.getPredicate==sp && v.getSubject==tr && v.getObject==lm
       })
       val a = vgStat.head.getScoreArray.toList.map(_.toDouble)
