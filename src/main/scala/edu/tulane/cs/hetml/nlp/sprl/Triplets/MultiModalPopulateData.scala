@@ -121,91 +121,94 @@ object MultiModalPopulateData extends Logging {
     )
     xmlReader.setTripletRelationTypes(candidateRelations)
 
-    candidateRelations.foreach(r => {
-      if(r.getArgument(2).toString=="it")
-        r.setProperty("ImplicitLandmark","true")
-      else
-        r.setProperty("ImplicitLandmark","false")
-    })
-    println("Processing for Co-Reference...")
-    //**
-    // Landmark Candidates
-    val instances = if (isTrain) phrases.getTrainingInstances else phrases.getTestingInstances
-    val landmarks = instances.filter(t => t.getId != dummyPhrase.getId && lmFilter(t)).toList
-      .sortBy(x => x.getSentence.getStart + x.getStart)
-
-    //**
-    // Headwords of triplets
-    relationReader.loadClefRelationHeadwords(imageDataPath, isTrain)
-    val clefHWRelation = relationReader.clefHeadwordRelations.toList
-
-    val ILcandidateRelations = candidateRelations.filter(r => r.getProperty("ImplicitLandmark")=="true")
-
-    val p = new ProgressBar("Processing Relations", ILcandidateRelations.size)
-    val writeRels = new PrintWriter(resultsDir + "/implicitLandmarks.txt")
-    p.start()
-    ILcandidateRelations.foreach(r => {
-      p.step()
-      val headWordsTriplet = clefHWRelation.filter(c => {
-        c.getId==r.getId
+    if(useCoReference) {
+      candidateRelations.foreach(r => {
+        if(r.getArgument(2).toString=="it")
+          r.setProperty("ImplicitLandmark","true")
+        else
+          r.setProperty("ImplicitLandmark","false")
       })
+      println("Processing for Co-Reference...")
+      //**
+      // Landmark Candidates
+      val instances = if (isTrain) phrases.getTrainingInstances else phrases.getTestingInstances
+      val landmarks = instances.filter(t => t.getId != dummyPhrase.getId && lmFilter(t)).toList
+        .sortBy(x => x.getSentence.getStart + x.getStart)
 
       //**
-      // get possible Landmarks from Visual Genome
-      val possibleLMs = visualgenomeRelationsList.filter(v => v.getPredicate==headWordsTriplet.head.getSp
-        && v.getSubject==headWordsTriplet.head.getTr)
-      if(possibleLMs.size>0) {
-        //Count Unique Instances
-        var uniqueRelsForLM = scala.collection.mutable.Map[String, Int]()
-        possibleLMs.foreach(t => {
-          val key = t.getSubject + "-" + t.getPredicate + "-" + t.getObject
-          if(!(uniqueRelsForLM.keySet.exists(_ == key)))
-            uniqueRelsForLM += (key -> 1)
-          else {
-            var count = uniqueRelsForLM.get(key).get
-            count = count + 1
-            uniqueRelsForLM.update(key, count)
-          }
+      // Headwords of triplets
+      relationReader.loadClefRelationHeadwords(imageDataPath, isTrain)
+      val clefHWRelation = relationReader.clefHeadwordRelations.toList
+
+      val ILcandidateRelations = candidateRelations.filter(r => r.getProperty("ImplicitLandmark")=="true")
+
+      val p = new ProgressBar("Processing Relations", ILcandidateRelations.size)
+      val writeRels = new PrintWriter(resultsDir + "/implicitLandmarks.txt")
+      p.start()
+      ILcandidateRelations.foreach(r => {
+        p.step()
+        val headWordsTriplet = clefHWRelation.filter(c => {
+          c.getId==r.getId
         })
 
         //**
-        // get all landmark candidates for the sentence
-        val rSId = r.getArgumentId(0).split("\\(")(0)
-        val sentenceLMs = landmarks.filter(l => {
-          l.getSentence.getId == rSId && l.getText!=r.getArgument(0).toString && l.getText!=r.getArgument(2).toString
-        })
+        // get possible Landmarks from Visual Genome
+        val possibleLMs = visualgenomeRelationsList.filter(v => v.getPredicate==headWordsTriplet.head.getSp
+          && v.getSubject==headWordsTriplet.head.getTr)
+        if(possibleLMs.size>0) {
+          //Count Unique Instances
+          var uniqueRelsForLM = scala.collection.mutable.Map[String, Int]()
+          possibleLMs.foreach(t => {
+            val key = t.getSubject + "-" + t.getPredicate + "-" + t.getObject
+            if(!(uniqueRelsForLM.keySet.exists(_ == key)))
+              uniqueRelsForLM += (key -> 1)
+            else {
+              var count = uniqueRelsForLM.get(key).get
+              count = count + 1
+              uniqueRelsForLM.update(key, count)
+            }
+          })
 
-        //**
-        // Similarity scroes for each
-        val w2vVectorScores = uniqueRelsForLM.toList.map(t => {
-          val rSplited = t._1.split("-")
-          if(rSplited.length==3)
-            getMaxW2VScore(rSplited(2), sentenceLMs)
-          else {
-            val dummyLM = new Phrase()
-            dummyLM.setText("None")
-            dummyLM.setId("dummy")
-            (dummyLM, -1, 0.0)
+          //**
+          // get all landmark candidates for the sentence
+          val rSId = r.getArgumentId(0).split("\\(")(0)
+          val sentenceLMs = landmarks.filter(l => {
+            l.getSentence.getId == rSId && l.getText!=r.getArgument(0).toString && l.getText!=r.getArgument(2).toString
+          })
+
+          //**
+          // Similarity scroes for each
+          val w2vVectorScores = uniqueRelsForLM.toList.map(t => {
+            val rSplited = t._1.split("-")
+            if(rSplited.length==3)
+              getMaxW2VScore(rSplited(2), sentenceLMs)
+            else {
+              val dummyLM = new Phrase()
+              dummyLM.setText("None")
+              dummyLM.setId("dummy")
+              (dummyLM, -1, 0.0)
+            }
+          })
+          val ProbableLandmark = w2vVectorScores.sortBy(_._3).last
+          if(ProbableLandmark._3>0.90 && ProbableLandmark._1.getText!="None") {
+            val pLM = headWordFrom(ProbableLandmark._1)
+            writeRels.println(r.getArgument(0).toString + "-" + r.getArgument(1).toString + "-" + r.getArgument(2).toString + "->" + pLM)
+            r.setProperty("ProbableLandmark", pLM)
           }
-        })
-        val ProbableLandmark = w2vVectorScores.sortBy(_._3).last
-        if(ProbableLandmark._3>0.30 && ProbableLandmark._1.getText!="None") {
-          val pLM = headWordFrom(ProbableLandmark._1)
-          writeRels.println(r.getArgument(0).toString + "-" + r.getArgument(1).toString + "-" + r.getArgument(2).toString + "->" + pLM)
-          r.setProperty("ProbableLandmark", pLM)
+          else
+            r.setProperty("ProbableLandmark", "None")
         }
-        else
+        else {
           r.setProperty("ProbableLandmark", "None")
-      }
-      else {
-        r.setProperty("ProbableLandmark", "None")
-      }
-    })
-    p.stop()
-    writeRels.close()
-    relationReader.loadStats(imageDataPath, isTrain)
-    val vgStats = relationReader.visualGenomeStats.toList
-    relationsStats.populate(vgStats)
+        }
+      })
+      p.stop()
+      writeRels.close()
+
+      relationReader.loadStats(imageDataPath, isTrain)
+      val vgStats = relationReader.visualGenomeStats.toList
+      relationsStats.populate(vgStats)
+    }
 
     triplets.populate(candidateRelations, isTrain)
 

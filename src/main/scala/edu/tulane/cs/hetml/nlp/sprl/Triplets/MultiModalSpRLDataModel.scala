@@ -9,7 +9,7 @@ import edu.tulane.cs.hetml.nlp.sprl.Triplets.TripletSensors._
 import edu.tulane.cs.hetml.nlp.sprl.VisualTriplets.VisualTripletClassifiers.VisualTripletClassifier
 import edu.tulane.cs.hetml.vision._
 import edu.tulane.cs.hetml.relations.VisualGenomeStats
-
+import edu.tulane.cs.hetml.nlp.sprl.Triplets.tripletConfigurator._
 /** Created by Taher on 2017-01-11.
   */
 object MultiModalSpRLDataModel extends DataModel {
@@ -521,7 +521,8 @@ object MultiModalSpRLDataModel extends DataModel {
   val JF2_1 = property(triplets, cache = true) {
     r: Relation =>
       val (first, second, third) = getTripletArguments(r)
-      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+
+      if(useCoReference && r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
         first.getText.toLowerCase + "::" + second.getText.toLowerCase + "::" + r.getProperty("ProbableLandmark")
       else
         first.getText.toLowerCase + "::" + second.getText.toLowerCase + "::" + third.getText.toLowerCase
@@ -543,8 +544,8 @@ object MultiModalSpRLDataModel extends DataModel {
     r: Relation =>
       val (first, second, third) = getTripletArguments(r)
 
-      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
-        third.setText(r.getProperty("ProbableLandmark"))
+//      if(useCoReference && r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+//        third.setText(r.getProperty("ProbableLandmark"))
 
       val (start, end) = getStartAndEndArgs(r)
 
@@ -566,8 +567,8 @@ object MultiModalSpRLDataModel extends DataModel {
     r: Relation =>
       val (_, second, third) = getTripletArguments(r)
 
-      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
-        third.setText(r.getProperty("ProbableLandmark"))
+//      if(useCoReference && r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+//        third.setText(r.getProperty("ProbableLandmark"))
 
       second.getText.toLowerCase + "::" + roleToSpDependencyPath(second, third)
   }
@@ -582,8 +583,8 @@ object MultiModalSpRLDataModel extends DataModel {
     r: Relation =>
       val (_, second, third) = getTripletArguments(r)
 
-      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
-        third.setText(r.getProperty("ProbableLandmark"))
+//      if(useCoReference && r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+//        third.setText(r.getProperty("ProbableLandmark"))
 
       roleToSpDependencyPath(second, third)
   }
@@ -600,10 +601,9 @@ object MultiModalSpRLDataModel extends DataModel {
       if (third == dummyPhrase)
         undefined
       else {
-        if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+        if(useCoReference && r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
           third.setText(r.getProperty("ProbableLandmark"))
         getWordnetHypernyms(getHeadword(third))
-        ""
       }
   }
 
@@ -617,8 +617,8 @@ object MultiModalSpRLDataModel extends DataModel {
     r: Relation =>
       val (first, second, third) = getTripletArguments(r)
 
-      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
-        third.setText(r.getProperty("ProbableLandmark"))
+//      if(useCoReference && r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+//        third.setText(r.getProperty("ProbableLandmark"))
 
       val (start, end) = getStartAndEndArgs(r)
 
@@ -681,7 +681,7 @@ object MultiModalSpRLDataModel extends DataModel {
   val JF2_14 = property(triplets, cache = true) {
     r: Relation =>
       val (first, second, third) = getTripletArguments(r)
-      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+      if(useCoReference && r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
         third.setText(r.getProperty("ProbableLandmark"))
 
       headWordLemma(first) + "::" + second.getText.toLowerCase + "::" + headWordLemma(third)
@@ -716,7 +716,7 @@ object MultiModalSpRLDataModel extends DataModel {
     r: Relation =>
       val (_, _, third) = getTripletArguments(r)
 
-      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+      if(useCoReference && r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
         third.setText(r.getProperty("ProbableLandmark"))
 
       wordForm(third)
@@ -847,7 +847,7 @@ object MultiModalSpRLDataModel extends DataModel {
   val tripletHeadWordForm = property(triplets, cache = true) {
     r: Relation =>
       val (first, second, third) = getTripletArguments(r)
-      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+      if(useCoReference && r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
         third.setText(r.getProperty("ProbableLandmark"))
 
       headWordFrom(first) + "::" + headWordFrom(second) + "::" + headWordFrom(third)
@@ -875,7 +875,7 @@ object MultiModalSpRLDataModel extends DataModel {
     r: Relation =>
       val (_, _, third) = getTripletArguments(r)
 
-      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+      if(useCoReference && r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
         third.setText(r.getProperty("ProbableLandmark"))
 
       headWordFrom(third)
@@ -884,8 +884,8 @@ object MultiModalSpRLDataModel extends DataModel {
   val tripletPhrasePos = property(triplets, cache = true) {
     r: Relation =>
       val (first, second, third) = getTripletArguments(r)
-      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
-        third.setText(r.getProperty("ProbableLandmark"))
+//      if(useCoReference && r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+//        third.setText(r.getProperty("ProbableLandmark"))
 
       phrasePos(first) + "::" + phrasePos(second) + "::" + phrasePos(third)
   }
@@ -911,7 +911,7 @@ object MultiModalSpRLDataModel extends DataModel {
   val tripletLmVector = property(triplets, cache = true, ordered = true) {
     r: Relation =>
       val (_, _, third) = getTripletArguments(r)
-      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+      if(useCoReference && r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
         third.setText(r.getProperty("ProbableLandmark"))
 
       headVector(third)
@@ -920,7 +920,7 @@ object MultiModalSpRLDataModel extends DataModel {
   val tripletLemma = property(triplets, cache = true) {
     r: Relation =>
       val (first, second, third) = getTripletArguments(r)
-      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+      if(useCoReference && r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
         third.setText(r.getProperty("ProbableLandmark"))
 
       lemma(first) + "::" + lemma(second) + "::" + lemma(third)
@@ -929,7 +929,7 @@ object MultiModalSpRLDataModel extends DataModel {
   val tripletHeadWordLemma = property(triplets, cache = true) {
     r: Relation =>
       val (first, second, third) = getTripletArguments(r)
-      if(r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
+      if(useCoReference && r.getProperty("ImplicitLandmark")=="true" && r.getProperty("ProbableLandmark")!="None")
         third.setText(r.getProperty("ProbableLandmark"))
 
       headWordLemma(first) + "::" + headWordLemma(second) + "::" + headWordLemma(third)
