@@ -169,12 +169,24 @@ object MultiModalPopulateData extends Logging {
             }
           })
 
-          //**
-          // get all landmark candidates for the sentence
           val rSId = r.getArgumentId(0).split("\\(")(0)
-          val sentenceLMs = landmarks.filter(l => {
-            l.getSentence.getId == rSId && l.getText!=r.getArgument(0).toString && l.getText!=r.getArgument(2).toString
-          })
+          val sentenceLMs =
+            if(useCrossSentence) {
+              val docId = sentences().filter(s => s.getId==rSId).head.getDocument.getId
+              val sens = sentences().filter(s => s.getDocument.getId==docId)
+              landmarks.filter(l => {
+                sens.exists(s => {
+                  s.getId==l.getSentence.getId
+                }) && l.getText!=r.getArgument(0).toString && l.getText!=r.getArgument(2).toString
+              })
+            }
+            else {
+            //**
+            // get all landmark candidates for the sentence
+               landmarks.filter(l => {
+                l.getSentence.getId == rSId && l.getText!=r.getArgument(0).toString && l.getText!=r.getArgument(2).toString
+              })
+            }
 
           //**
           // Similarity scroes for each
@@ -190,7 +202,7 @@ object MultiModalPopulateData extends Logging {
             }
           })
           val ProbableLandmark = w2vVectorScores.sortBy(_._3).last
-          if(ProbableLandmark._3>0.90 && ProbableLandmark._1.getText!="None") {
+          if(ProbableLandmark._3>0.75 && ProbableLandmark._1.getText!="None") {
             val pLM = headWordFrom(ProbableLandmark._1)
             writeRels.println(r.getArgument(0).toString + "-" + r.getArgument(1).toString + "-" + r.getArgument(2).toString + "->" + pLM)
             r.setProperty("ProbableLandmark", pLM)
