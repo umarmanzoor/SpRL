@@ -8,13 +8,12 @@ import MultiModalSpRLDataModel._
 import edu.tulane.cs.hetml.nlp.sprl.Helpers.WordClassifierHelper
 import edu.tulane.cs.hetml.nlp.sprl.Triplets.MultiModalSpRLTripletClassifiers._
 import edu.tulane.cs.hetml.vision.{ImageTriplet, WordSegment}
-
+import edu.tulane.cs.hetml.nlp.sprl.Triplets.tripletConfigurator._
 import scala.collection.JavaConversions._
 
 object TripletSentenceLevelConstraints {
   val imageSupportsSp2 = new ImageSupportsSpClassifier2()
   val imageSupportsSp = new ImageSupportsSpClassifier()
-  val visualGenomeRCC8Support = new VisualGenomeRCC8Support()
   val visualGenomeDirectionSupport = new VisualGenomeDirectionSupport()
 
   val visualGenomePO = new BinaryRCC8Support("PO")
@@ -38,9 +37,12 @@ object TripletSentenceLevelConstraints {
             ._exists(x => (TripletRelationClassifier on x) is "true")
 
           val tr = TrajectorRoleClassifier on (triplets(x) ~> tripletToTr).head is "true"
+
           val lm = LandmarkRoleClassifier on (triplets(x) ~> tripletToLm).head is "true"
 
-          a = a and (tr ==> trRel) and (lm ==> lmRel)
+          a = a and (tr ==> trRel)
+          if(!useCoReference)
+            a = a and (lm ==> lmRel)
       }
       a
   }
@@ -51,14 +53,12 @@ object TripletSentenceLevelConstraints {
       a = new FirstOrderConstant(true)
       (sentences(s) ~> sentenceToTriplets).foreach {
         x =>
+          val tr = TrajectorRoleClassifier on (triplets(x) ~> tripletToTr).head is "true"
+          val sp = IndicatorRoleClassifier on (triplets(x) ~> tripletToSp).head is "true"
+          val lm = LandmarkRoleClassifier on (triplets(x) ~> tripletToLm).head is "true"
           a = a and (
             (
-              (TripletRelationClassifier on x) is "true") ==>
-              (
-                (TrajectorRoleClassifier on (triplets(x) ~> tripletToTr).head is "true") and
-                  (IndicatorRoleClassifier on (triplets(x) ~> tripletToSp).head is "true") and
-                  (LandmarkRoleClassifier on (triplets(x) ~> tripletToLm).head is "true")
-                )
+              (TripletRelationClassifier on x) is "true") ==> (tr and sp and lm)
             )
       }
       a
@@ -289,54 +289,6 @@ object TripletSentenceLevelConstraints {
       a
   }
 
-  val rCC8SupportByVisualGenome  = ConstrainedClassifier.constraint[Sentence] {
-    var a: FirstOrderConstraint = null
-    s: Sentence =>
-      a = new FirstOrderConstant(true)
-      (sentences(s) ~> sentenceToTriplets).foreach {
-        x =>
-          a = a and ((visualGenomeRCC8Support on x is "true") ==>
-            (TripletRelationClassifier on x is "true"))
-      }
-      a
-  }
-
-  val rCC8DiscardByVisualGenome  = ConstrainedClassifier.constraint[Sentence] {
-    var a: FirstOrderConstraint = null
-    s: Sentence =>
-      a = new FirstOrderConstant(true)
-      (sentences(s) ~> sentenceToTriplets).foreach {
-        x =>
-          a = a and ((visualGenomeRCC8Support on x is "false") ==>
-            (TripletRelationClassifier on x is "false"))
-      }
-      a
-  }
-
-  val directionSupportByVisualGenome  = ConstrainedClassifier.constraint[Sentence] {
-    var a: FirstOrderConstraint = null
-    s: Sentence =>
-      a = new FirstOrderConstant(true)
-      (sentences(s) ~> sentenceToTriplets).foreach {
-        x =>
-          a = a and ((visualGenomeDirectionSupport on x is "true") ==>
-            (TripletRelationClassifier on x is "true"))
-      }
-      a
-  }
-
-  val directionDiscardByVisualGenome  = ConstrainedClassifier.constraint[Sentence] {
-    var a: FirstOrderConstraint = null
-    s: Sentence =>
-      a = new FirstOrderConstant(true)
-      (sentences(s) ~> sentenceToTriplets).foreach {
-        x =>
-          a = a and ((visualGenomeDirectionSupport on x is "false") ==>
-            (TripletRelationClassifier on x is "false"))
-      }
-      a
-  }
-
   val discardRelationByImage = ConstrainedClassifier.constraint[Sentence] {
     var a: FirstOrderConstraint = null
     s: Sentence =>
@@ -359,17 +311,7 @@ object TripletSentenceLevelConstraints {
           boostLandmark(x) and
           boostTripletByGeneralType(x) and
           boostGeneralByDirectionMulti(x) and
-          boostGeneralByRegionMulti(x) //and
-          //rCC8SupportByTPP(x)
-          //rCC8SupportByVisualGenome(x)
-          //directionDiscardByVisualGenome(x)
-          //rCC8DiscardByVisualGenome(x)
-       //and
-          //diectionByVisualGenome(x)
-
-
-
-      //approveRelationByVisualGenome(x)
+          boostGeneralByRegionMulti(x)
 
       if (tripletConfigurator.usePrepositions) {
         if(tripletConfigurator.alignmentMethod == "topN"){

@@ -15,14 +15,14 @@ object tripletConfigurator {
   val trainFile = "data/mSprl/saiapr_tc-12/newSprl2017_train.xml"//"data/TrainSet.xml"//
   val testFile = "data/mSprl/saiapr_tc-12/newSprl2017_gold.xml"//"data/TestSet.xml"//
   val suffix = ""
-  val model = FeatureSets.WordEmbeddingPlusImage
+  val model = FeatureSets.BaseLineWithImage
   var isTrain = true
   WordasClassifierConfigurator.isTrain = isTrain
   val useCrossSentence = false
   val useCoReference = true
   val usePreprocessedVisualGenome = true
   val useW2VViusalGenome = false
-  val trainTestTogether = true
+  val trainTestTogether = false
   val jointTrain = false
   val iterations = 50
   val useConstraints = true

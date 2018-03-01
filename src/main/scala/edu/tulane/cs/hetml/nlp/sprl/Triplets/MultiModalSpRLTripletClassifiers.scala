@@ -32,7 +32,7 @@ object MultiModalSpRLTripletClassifiers {
       tripletSpWithoutLandmark,
       tripletPhrasePos, tripletDependencyRelation, tripletHeadWordPos,
       tripletLmBeforeSp, tripletTrBeforeLm, tripletTrBeforeSp,
-      tripletDistanceTrSp, tripletDistanceLmSp //, tripletScoreStats
+      tripletDistanceTrSp, tripletDistanceLmSp
     ) ++
       (featureSet match {
         case FeatureSets.BaseLineWithImage => List(tripletTrMatchingSegmentSimilarity,
