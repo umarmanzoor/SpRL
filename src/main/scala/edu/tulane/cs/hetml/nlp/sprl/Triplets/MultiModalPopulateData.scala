@@ -121,7 +121,9 @@ object MultiModalPopulateData extends Logging {
     )
     xmlReader.setTripletRelationTypes(candidateRelations)
 
-    if(useCoReference) {
+    val filteredCan = candidateRelations.filter(c=> c.getArgument(2).toString=="it")
+    if(useCoReference && !isTrain) {
+      val writer = new PrintWriter(resultsDir + "/ImplicitLandmarksTest.txt")
       candidateRelations.foreach(r => {
         if(r.getArgument(2).toString=="it")
           r.setProperty("ImplicitLandmark","true")
@@ -143,14 +145,16 @@ object MultiModalPopulateData extends Logging {
       val ILcandidateRelations = candidateRelations.filter(r => r.getProperty("ImplicitLandmark")=="true")
 
       val p = new ProgressBar("Processing Relations", ILcandidateRelations.size)
-      val writeRels = new PrintWriter(resultsDir + "/implicitLandmarks.txt")
       p.start()
       ILcandidateRelations.foreach(r => {
         p.step()
         val headWordsTriplet = clefHWRelation.filter(c => {
           c.getId==r.getId
         })
-
+        writer.println("triplet ->" + r.getId + " " + r.getArgument(0).toString + " " + r.getArgument(1).toString + " " + r.getArgument(2).toString)
+        writer.println("Sentence ->" + r.getParent.getText)
+        writer.println("triplet Headwords->" + headWordsTriplet.head.getTr + " " + headWordsTriplet.head.getSp + " " + headWordsTriplet.head.getLm)
+        writer.println("Visual Genome - Triplets")
         //**
         // get possible Landmarks from Visual Genome
         val possibleLMs = visualgenomeRelationsList.filter(v => v.getPredicate==headWordsTriplet.head.getSp
@@ -167,6 +171,10 @@ object MultiModalPopulateData extends Logging {
               count = count + 1
               uniqueRelsForLM.update(key, count)
             }
+          })
+          // Writing Visual Genome Suggested triplets
+          uniqueRelsForLM.toList.foreach(t => {
+            writer.println(t._1.replaceAll("-", " ") + " -> " + t._2)
           })
 
           val rSId = r.getArgumentId(0).split("\\(")(0)
@@ -188,12 +196,16 @@ object MultiModalPopulateData extends Logging {
               })
             }
 
+          writer.println("Similarity Scores")
           //**
           // Similarity scroes for each
           val w2vVectorScores = uniqueRelsForLM.toList.map(t => {
             val rSplited = t._1.split("-")
-            if(rSplited.length==3)
-              getMaxW2VScore(rSplited(2), sentenceLMs)
+            if(rSplited.length==3) {
+              val v = getMaxW2VScore(rSplited(2), sentenceLMs)
+              writer.println(v._1.getText, v._3)
+              v
+            }
             else {
               val dummyLM = new Phrase()
               dummyLM.setText("None")
@@ -202,27 +214,31 @@ object MultiModalPopulateData extends Logging {
             }
           })
           val ProbableLandmark = w2vVectorScores.sortBy(_._3).last
-          if(ProbableLandmark._3>0.75 && ProbableLandmark._1.getText!="None") {
+          if(ProbableLandmark._3>0.25 && ProbableLandmark._1.getText!="None") {
             val pLM = headWordFrom(ProbableLandmark._1)
-            writeRels.println(r.getArgument(0).toString + "-" + r.getArgument(1).toString + "-" + r.getArgument(2).toString + "->" + pLM)
+            writer.println("ProbableLandmark -> " + pLM)
             r.setProperty("ProbableLandmark", pLM)
           }
-          else
+          else {
+            writer.println("ProbableLandmark -> None")
             r.setProperty("ProbableLandmark", "None")
+          }
         }
         else {
+          writer.println("ProbableLandmark -> None")
           r.setProperty("ProbableLandmark", "None")
         }
+        writer.println("-------------------------------------------------------------------------------------------")
       })
       p.stop()
-      writeRels.close()
+      writer.close()
 
-      relationReader.loadStats(imageDataPath, isTrain)
-      val vgStats = relationReader.visualGenomeStats.toList
-      relationsStats.populate(vgStats)
+//      relationReader.loadStats(imageDataPath, isTrain)
+//      val vgStats = relationReader.visualGenomeStats.toList
+//      relationsStats.populate(vgStats)
     }
 
-    triplets.populate(candidateRelations, isTrain)
+    triplets.populate(filteredCan, isTrain)
 
     //    if(!usePreprocessedVisualGenome)
 //      saveRelationsScores()
@@ -240,7 +256,7 @@ object MultiModalPopulateData extends Logging {
     triplets().foreach(t => {
       val (first, second, third) = getTripletArguments(t)
       val tr = headWordFrom(first)
-      val sp = headWordFrom(second)
+      val sp = second.getText //headWordFrom(second)
       val lm = headWordFrom(third)
       pw.println(t.getId + "~" + tr + "~" + sp + "~" + lm)
     })

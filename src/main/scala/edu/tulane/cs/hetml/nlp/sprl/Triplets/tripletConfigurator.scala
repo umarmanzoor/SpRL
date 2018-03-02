@@ -15,21 +15,21 @@ object tripletConfigurator {
   val trainFile = "data/mSprl/saiapr_tc-12/newSprl2017_train.xml"//"data/TrainSet.xml"//
   val testFile = "data/mSprl/saiapr_tc-12/newSprl2017_gold.xml"//"data/TestSet.xml"//
   val suffix = ""
-  val model = FeatureSets.BaseLineWithImage
+  val model = FeatureSets.BaseLine
   var isTrain = true
   WordasClassifierConfigurator.isTrain = isTrain
   val useCrossSentence = false
-  val useCoReference = true
+  val useCoReference = false
   val usePreprocessedVisualGenome = true
   val useW2VViusalGenome = false
   val trainTestTogether = false
   val jointTrain = false
   val iterations = 50
-  val useConstraints = true
+  val useConstraints = false
   val usePrepositions = false
   val trainPrepositionClassifier = false
   val alignmentMethod = "classifier" // possible values: "classifier" "gold", "w2v", "topN"
   val topAlignmentCount = 3
-  var populateImages = true //model == FeatureSets.WordEmbeddingPlusImage || model == FeatureSets.BaseLineWithImage
+  var populateImages = false //model == FeatureSets.WordEmbeddingPlusImage || model == FeatureSets.BaseLineWithImage
   val globalSpans = false // set true when dataset has global spans for roles
 }
